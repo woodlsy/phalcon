@@ -1,14 +1,12 @@
-# phalcon
-### 一、入口文件
-```php
-define('APP_NAME', 'blog'); // 项目名称
-define('APP_DIR', 'application'); // 项目文件根目录文件，无则留空
+<?php
+/*
+ * Modified: prepend directory path of current file, because of this file own different ENV under between Apache and command line.
+ * NOTE: please remove this comment.
+ */
 
-require '../vendor/woodlsy/phalcon/public/index.php';
-```
-### 配置文件
-```php
-[
+use Phalcon\Config;
+
+$config = [
     'open_modules' => true, // 是否开启多模块，true 是 false 否
     'limit_request' => true, // 限制频繁请求 true 是 false 否
     'csrf' => true, // 是否开启csrf true是 false 否
@@ -33,5 +31,11 @@ require '../vendor/woodlsy/phalcon/public/index.php';
             'charset'  => 'utf8',
         ],
     ],
-]
-```
+];
+
+if (file_exists(APP_PATH.'/config/config.php')) {
+    $appConfig = require_once APP_PATH.'/config/config.php';
+    $config = array_merge($config, $appConfig);
+}
+
+return new Config($config);
