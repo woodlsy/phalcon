@@ -43,14 +43,14 @@ class Redis
         //Log::write('pack', 'redis配置：' . json_encode($redisConfig, JSON_UNESCAPED_UNICODE), 'redis_config');
         try {
             $this->obj = new \Redis();
-            $this->obj->connect($redisConfig['default']['host'], $redisConfig['default']['port']);
-            if (!empty($redisConfig['default']['password'])) {
-                $this->obj->auth($redisConfig['default']['password']);
+            $this->obj->connect($redisConfig['host'], $redisConfig['port']);
+            if (!empty($redisConfig['password'])) {
+                $this->obj->auth($redisConfig['password']);
             }
 //             $this->obj = new \RedisCluster(NULL, $redisConfig['default']['host']);
 
             if (!$this->obj) {
-                trigger_error('redis|redis连接失败，host：'.json_encode($redisConfig['default']['host'], JSON_UNESCAPED_UNICODE));
+                trigger_error('redis|redis连接失败，host：'.json_encode($redisConfig['host'], JSON_UNESCAPED_UNICODE));
                 return false;
             }
         } catch(Exception $e){
@@ -59,7 +59,7 @@ class Redis
         }
         
         //设置前缀
-        $this->obj->setOption(\Redis::OPT_PREFIX, $redisConfig['default']['prefix']);
+        $this->obj->setOption(\Redis::OPT_PREFIX, $redisConfig['prefix']);
 
         return $this->obj;
     }

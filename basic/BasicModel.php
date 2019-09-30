@@ -2,10 +2,10 @@
 
 namespace woodlsy\phalcon\basic;
 
-use library\Helper;
+use woodlsy\phalcon\library\Log;
+use woodlsy\phalcon\library\Helper;
 use Phalcon\DI;
 use Phalcon\Mvc\Model;
-use library\Log;
 use Phalcon\Db;
 use Exception;
 
@@ -28,7 +28,7 @@ abstract class BasicModel extends Model
     {
         //初始化数据库
         if(!empty($this->_targetDb)){
-            if(!isset(DI::getDefault()->get('config')->application->database->{$this->_targetDb})){
+            if(!isset(DI::getDefault()->get('config')->db->{$this->_targetDb})){
                 Log::write('sql', "数据库｛{$this->_targetDb}｝连接不存在", 'error');
                 throw new Exception('数据库连接失败');
             }
@@ -463,6 +463,7 @@ abstract class BasicModel extends Model
      */
     private function execute($sql, $params)
     {
+        $sql = $this->loadPrefix($sql);
         try {
             $this->lastSql = $sql;
             $this->getWriteConnection()->execute($sql, $params);

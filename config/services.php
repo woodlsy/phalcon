@@ -14,42 +14,20 @@ $di->setShared('config', function () {
 $config = $di->getConfig();
 
 /**
- * Setting up the view component
- */
-$di->set(
-    "view",
-    function () use ($config) {
-        $view = new View();
-
-        // A trailing directory separator is required
-        $view->setViewsDir($config->application->viewsDir . '/' . $this->get('router')->getModuleName());
-        $view->setLayoutsDir('layouts/');
-        $view->setLayout('index');
-
-//         $view->registerEngines([".html"   => "Phalcon\\Mvc\\View\\Engine\\Php"]);
-        return $view;
-    },
-    true
-);
-
-/**
  * Database connection is created based in the parameters defined in the configuration file
  */
-//主库
-$di->setShared('dbMaster', function () {
-    $config = $this->getConfig();
+foreach ($config->db->toArray() as $key => $val) {
+    $class = 'Phalcon\Db\Adapter\Pdo\\' . $val['adapter'];
+    $params = $val;
 
-    $class  = 'Phalcon\Db\Adapter\Pdo\\' . $config->application->database->master->adapter;
-    $params = $config->application->database->master->toArray();
-
-    if ($config->application->database->master->adapter == 'Postgresql') {
+    if ($val['adapter'] == 'Postgresql') {
         unset($params['charset']);
     }
 
     $connection = new $class($params);
+    $di->setShared($key, $connection);
+}
 
-    return $connection;
-});
 
 // Start the session the first time when some component request the session service
 $di->setShared(
@@ -63,8 +41,13 @@ $di->setShared(
     }
 );
 
+$di->set('crypt', function (){
+    $crypt = new Phalcon\Crypt();
+    $crypt->setKey($_SERVER['HTTP_HOST']); //salt
+    return $crypt;
+});
+
 if (true !== (bool) $config->open_modules) {
-    /************ 单模块时开启 start *************/
     $di->set(
         "dispatcher",
         function () {
@@ -75,5 +58,23 @@ if (true !== (bool) $config->open_modules) {
             return $dispatcher;
         }
     );
-    /************ 单模块时开启 end *************/
+
+    /**
+     * Setting up the view component
+     */
+    $di->set(
+        "view",
+        function () use ($config) {
+            $view = new View();
+
+            // A trailing directory separator is required
+            $view->setViewsDir($config->viewsDir);
+//        $view->setLayoutsDir('layouts/');
+//        $view->setLayout('index');
+
+//         $view->registerEngines([".html"   => "Phalcon\\Mvc\\View\\Engine\\Php"]);
+            return $view;
+        },
+        true
+    );
 }

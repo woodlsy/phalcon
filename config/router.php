@@ -3,7 +3,7 @@
 $router = $di->getRouter();
 
 $router->add(
-    "/:module/:controller/:action/:params\.json",
+    "/:module/:controller/:action/:params\.html",
     [
         "module"     => 1,
         "controller" => 2,

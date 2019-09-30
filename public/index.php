@@ -37,31 +37,37 @@ include WOODLSY_PHALCON_PATH . '/config/loader.php';
 
 Log::setTriggerError();
 
-$debug = new Debug();
-$debug->listen();
-
-//try {
-// 创建应用
-$application = new Application($di);
-
-if (true === (bool) $config->open_modules) {
-    $moduels = [];
-    foreach ($config->modules as $moduleName) {
-        $moduels[$moduleName] = [
-            "className" => APP_DIR . "\\modules\\{$moduleName}\\Module",
-            "path"      => APP_PATH . "/modules/{$moduleName}/Module.php",
-        ];
-    }
-    // 注册模块
-    $application->registerModules($moduels);
+if (true === (bool) $config->debug) {
+    $debug = new Debug();
+    $debug->listen();
 }
 
-// 处理请求
-$response = $application->handle();
+try {
+    // 创建应用
+    $application = new Application($di);
+
+    if (true === (bool) $config->open_modules) {
+        $moduels = [];
+        foreach ($config->modules as $moduleName) {
+            $moduels[$moduleName] = [
+                "className" => APP_DIR . "\\modules\\{$moduleName}\\Module",
+                "path"      => APP_PATH . "/modules/{$moduleName}/Module.php",
+            ];
+        }
+        // 注册模块
+        $application->registerModules($moduels);
+    }
+
+    // 处理请求
+    $response = $application->handle();
 
 
-$response->send();
-//} catch (Exception $e) {
-//    echo '系统错误，请联系管理员';
-//    Log::write('system', $e->getMessage());
-//}
+    $response->send();
+} catch (Exception $e) {
+    if (true === (bool) $config->debug) {
+        echo $debug->onUncaughtException($e);
+    } else {
+        echo '系统错误，请联系管理员';
+        Log::write('system', $e->getMessage());
+    }
+}
