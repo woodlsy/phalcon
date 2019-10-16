@@ -15,6 +15,8 @@ require '../vendor/woodlsy/phalcon/public/index.php';
     'csrf_key_name' => 'tokenKey',
     'csrf_key_value' => 'tokenValue',
     'logsPath'  => '/data/logs/'.APP_NAME.'/',
+    'viewsDir'       => APP_PATH . '/views/',
+    'debug'          => true,
     'redis' => [
         'host' =>'127.0.0.1',
         'port' =>'6379',
