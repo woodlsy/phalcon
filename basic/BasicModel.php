@@ -27,8 +27,8 @@ abstract class BasicModel extends Model
     public function initialize()
     {
         //初始化数据库
-        if(!empty($this->_targetDb)){
-            if(!isset(DI::getDefault()->get('config')->db->{$this->_targetDb})){
+        if (!empty($this->_targetDb)) {
+            if (!isset(DI::getDefault()->get('config')->db->{$this->_targetDb})) {
                 Log::write('sql', "数据库｛{$this->_targetDb}｝连接不存在", 'error');
                 throw new Exception('数据库连接失败');
             }
@@ -196,6 +196,9 @@ abstract class BasicModel extends Model
 
     /**
      * 处理更新数据
+     * $data = [
+     *    num => ['+', 1],
+     * ];
      *
      * @author yls
      * @param array $data
@@ -205,8 +208,11 @@ abstract class BasicModel extends Model
     {
         $value = $fieldArr = [];
         foreach ($data as $key => $val) {
-            if (strpos($val, '+') || strpos($val, ' - ')) {
-                $fieldArr[] = '`' . $key . '`=' . $val;
+            if (is_array($val)) {
+                if (in_array($val[0], ['+', '-'])) {
+                    $fieldArr[] = '`' . $key . '`=' . '`' . $key . '` ' . $val[0];
+                    $value[]    = $val;
+                }
             } else {
                 $fieldArr[] = '`' . $key . '`=?';
                 $value[]    = $val;
@@ -289,7 +295,8 @@ abstract class BasicModel extends Model
 
     /**
      * 获取单条数据(通过主键)
-     * @param int $id
+     *
+     * @param int  $id
      * @param null $fields
      * @return array|mixed
      */
@@ -304,7 +311,8 @@ abstract class BasicModel extends Model
 
     /**
      * 获取单条数据
-     * @param $where
+     *
+     * @param        $where
      * @param string $fields
      * @param string $orderBy
      * @return array
@@ -317,11 +325,12 @@ abstract class BasicModel extends Model
 
     /**
      * 获取列表(支持分页)
-     * @param $where
+     *
+     * @param        $where
      * @param string $orderBy
-     * @param null $offset
-     * @param null $row
-     * @param null $fields
+     * @param null   $offset
+     * @param null   $row
+     * @param null   $fields
      * @return array|bool
      */
     public function getList($where, $orderBy = '', $offset = NUll, $row = NUll, $fields = NUll)
@@ -443,8 +452,8 @@ abstract class BasicModel extends Model
         //执行SQL
         try {
             $this->lastSql = $sql;
-            $connection = $this->getReadConnection();
-            $result     = $connection->query($sql, $bindParams);
+            $connection    = $this->getReadConnection();
+            $result        = $connection->query($sql, $bindParams);
             $result->setFetchMode(Db::FETCH_ASSOC);
             return $result->fetchAll();
         } catch (Exception $e) {
@@ -524,7 +533,7 @@ abstract class BasicModel extends Model
      * @author yls
      * @return string|null
      */
-    public function getLastSql() :? string
+    public function getLastSql() : ?string
     {
         return $this->lastSql;
     }

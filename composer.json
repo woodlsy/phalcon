@@ -3,7 +3,9 @@
     "description": "phalcon",
     "type": "library",
     "require": {
-        "php": ">=7.2.0"
+        "php": ">=7.2.0",
+        "ext-json": "*",
+        "ext-bcmath": "*"
     },
     "license": "MIT",
     "minimum-stability": "dev",

@@ -63,10 +63,10 @@ class Helper
      * 转为json格式
      *
      * @author yls
-     * @param array $content
+     * @param array|object $content
      * @return string
      */
-    public static function jsonEncode(array $content) : string
+    public static function jsonEncode($content) : string
     {
         return json_encode($content, JSON_UNESCAPED_UNICODE);
     }
@@ -113,6 +113,28 @@ class Helper
             }
             return $arr;
         }
+        return $array;
+    }
+
+    /**
+     * 取数组其中一个字段的值来做索引
+     *
+     * @author yls
+     * @param array  $arr
+     * @param string $field
+     * @return array
+     */
+    public static function indexArray(array $arr, string $field)
+    {
+        if (empty($arr)) {
+            return $arr;
+        }
+        $data = [];
+        foreach ($arr as $key => $val) {
+            $data[($val[$field] ?? '')] = $val;
+        }
+
+        return $data;
     }
 
     /**
