@@ -210,7 +210,7 @@ abstract class BasicModel extends Model
         foreach ($data as $key => $val) {
             if (is_array($val)) {
                 if (in_array($val[0], ['+', '-'])) {
-                    $fieldArr[] = '`' . $key . '`=' . '`' . $key . '` ' . $val[0];
+                    $fieldArr[] = '`' . $key . '`=' . '`' . $key . '` ' . $val[0] . ' ?';
                     $value[]    = $val[1];
                 }
             } else {
