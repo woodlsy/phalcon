@@ -211,7 +211,7 @@ abstract class BasicModel extends Model
             if (is_array($val)) {
                 if (in_array($val[0], ['+', '-'])) {
                     $fieldArr[] = '`' . $key . '`=' . '`' . $key . '` ' . $val[0];
-                    $value[]    = $val;
+                    $value[]    = $val[1];
                 }
             } else {
                 $fieldArr[] = '`' . $key . '`=?';
