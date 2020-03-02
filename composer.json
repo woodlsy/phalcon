@@ -13,5 +13,8 @@
         "psr-4": {
             "woodlsy\\phalcon\\": "/"
         }
+    },
+    "require-dev": {
+        "phalcon/ide-stubs": "dev-master"
     }
 }

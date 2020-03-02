@@ -33,6 +33,7 @@ class BasicController extends Controller
     protected $moduleName     = null;
     protected $controllerName = null;
     protected $actionName     = null;
+    protected $config;
 
     /**
      * 加载控制器前执行
@@ -78,6 +79,7 @@ class BasicController extends Controller
      */
     public function initialize()
     {
+        $this->config = Di::getDefault()->getConfig();
         $this->checkCSRF();
     }
 
