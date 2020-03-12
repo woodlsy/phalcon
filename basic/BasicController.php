@@ -47,6 +47,8 @@ class BasicController extends Controller
         $this->controllerName = $this->router->getControllerName();
         $this->actionName     = $this->router->getActionName();
 
+        $this->config = Di::getDefault()->getConfig();
+
         if ($this->request->isPost() && true === (bool) $this->config->limit_request) {
             session_start();
             $key = session_id() . '_controller_lock_' . $this->moduleName . '_' . $this->controllerName . '_' . $this->actionName;
@@ -79,7 +81,6 @@ class BasicController extends Controller
      */
     public function initialize()
     {
-        $this->config = Di::getDefault()->getConfig();
         $this->checkCSRF();
     }
 
