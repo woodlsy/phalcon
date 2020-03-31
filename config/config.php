@@ -15,6 +15,7 @@ $config = [
     'logsPath'       => '/data/logs/' . APP_NAME . '/',
     'viewsDir'       => APP_PATH . '/views/',
     'debug'          => true,
+    'suffix'         => '', // url后缀
     'redis'          => [
         'host'     => '127.0.0.1',
         'port'     => '6379',

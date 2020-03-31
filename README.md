@@ -17,6 +17,7 @@ require '../vendor/woodlsy/phalcon/public/index.php';
     'logsPath'  => '/data/logs/'.APP_NAME.'/',
     'viewsDir'       => APP_PATH . '/views/',
     'debug'          => true,
+    'suffix' => 'html', // URL后缀
     'redis' => [
         'host' =>'127.0.0.1',
         'port' =>'6379',

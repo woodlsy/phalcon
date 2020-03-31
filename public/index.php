@@ -23,12 +23,10 @@ $di = new FactoryDefault();
  */
 include WOODLSY_PHALCON_PATH . '/config/services.php';
 
-if (true === (bool) $config->open_modules) {
-    /**
-     * Handle routes
-     */
-    include WOODLSY_PHALCON_PATH . '/config/router.php';
-}
+/**
+ * Handle routes
+ */
+include WOODLSY_PHALCON_PATH . '/config/router.php';
 
 /**
  * Include Autoloader
