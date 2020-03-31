@@ -50,7 +50,9 @@ class BasicController extends Controller
         $this->config = Di::getDefault()->getConfig();
 
         if ($this->request->isPost() && true === (bool) $this->config->limit_request) {
-            session_start();
+            if (!session_id()){
+                session_start();
+            }
             $key = session_id() . '_controller_lock_' . $this->moduleName . '_' . $this->controllerName . '_' . $this->actionName;
             if (Redis::getInstance()->exists($key)) {
                 throw new Exception('请勿频繁请求');
