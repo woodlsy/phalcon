@@ -56,7 +56,7 @@ abstract class BasicModel extends Model
      */
     private function loadPrefix($string = null) : string
     {
-        static $db_prefix = null;
+        $db_prefix = null;
         if (!$db_prefix) {
             $dbConfig  = $this->getReadConnection()->getDescriptor();
             $db_prefix = isset($dbConfig['prefix']) ? $dbConfig['prefix'] : null;
