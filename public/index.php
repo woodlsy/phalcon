@@ -12,6 +12,7 @@ defined('BASE_PATH') or define('BASE_PATH', dirname(__DIR__) . '/../../..');
 defined('APP_PATH') or define('APP_PATH', dirname(__DIR__) . '/../../../' . APP_DIR);
 define('WOODLSY_PHALCON_PATH', dirname(__DIR__));
 defined('APP_NAME') or define('APP_NAME', 'app');
+defined('RUN_TYPE') or define('RUN_TYPE', 'cgi');
 date_default_timezone_set('Asia/Shanghai');
 
 require BASE_PATH . '/vendor/autoload.php';

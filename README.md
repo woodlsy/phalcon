@@ -1,11 +1,20 @@
 # phalcon
-### 一、入口文件
+### 入口文件
 ```php
-define('APP_NAME', 'blog'); // 项目名称
+define('APP_NAME', 'app'); // 项目名称
 define('APP_DIR', 'application'); // 项目文件根目录文件，无则留空
 
 require '../vendor/woodlsy/phalcon/public/index.php';
 ```
+### 脚本
+tasks文件夹放在根目录下
+入口文件cli.php
+```php
+define('APP_NAME', 'app');
+
+require_once 'vendor/woodlsy/phalcon/cli.php';
+```
+
 ### 配置文件
 ```php
 [

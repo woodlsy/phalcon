@@ -47,7 +47,7 @@ $di->set('crypt', function (){
     return $crypt;
 });
 
-if (true !== (bool) $config->open_modules) {
+if (true !== (bool) $config->open_modules && 'cli' !== RUN_TYPE) {
     $di->set(
         "dispatcher",
         function () {
