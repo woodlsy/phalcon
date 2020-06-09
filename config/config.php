@@ -8,6 +8,10 @@ use Phalcon\Config;
 
 $config = [
     'open_modules'   => true, // 是否开启多模块，true 是 false 否
+    'modules'        => [
+        'index',
+    ],
+    'yar_service'    => false,
     'limit_request'  => true, // 限制频繁请求 true 是 false 否
     'csrf'           => true, // 是否开启csrf true是 false 否
     'csrf_key_name'  => 'tokenKey',

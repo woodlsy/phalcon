@@ -69,7 +69,7 @@ class BasicController extends Controller
      */
     public function afterExecuteRoute()
     {
-        if ($this->request->isPost()) {
+        if ($this->request->isPost() && true === (bool) $this->config->limit_request) {
             $key = session_id() . '_controller_lock_' . $this->moduleName . '_' . $this->controllerName . '_' . $this->actionName;
             Redis::getInstance()->del($key);
         }

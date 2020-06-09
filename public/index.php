@@ -57,11 +57,14 @@ try {
         $application->registerModules($moduels);
     }
 
-    // 处理请求
-    $response = $application->handle();
-
-
-    $response->send();
+    if (true === (bool) $config->yar_service) {
+        $service = new Yar_Server(new \woodlsy\phalcon\library\YarService($application));
+        $service->handle();
+    } else {
+        // 处理请求
+        $response = $application->handle();
+        $response->send();
+    }
 } catch (Exception $e) {
     if (true === (bool) $config->debug) {
         echo $debug->onUncaughtException($e);

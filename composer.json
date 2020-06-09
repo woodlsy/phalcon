@@ -5,7 +5,8 @@
     "require": {
         "php": ">=7.2.0",
         "ext-json": "*",
-        "ext-bcmath": "*"
+        "ext-bcmath": "*",
+        "ext-phalcon": "^3.0"
     },
     "license": "MIT",
     "minimum-stability": "dev",
@@ -15,6 +16,6 @@
         }
     },
     "require-dev": {
-        "phalcon/ide-stubs": "dev-master"
+        "phalcon/ide-stubs": "^3.0"
     }
 }
