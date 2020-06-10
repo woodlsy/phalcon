@@ -163,4 +163,42 @@ class Helper
         return empty($mobile) ? '' : substr_replace($mobile,'****',3,4);
     }
 
+    /**
+     * 获取随机字符串
+     *
+     * @author yls
+     * @param int $length
+     * @param int $type
+     * @return bool|string
+     */
+    public static function randString(int $length, int $type = 7)
+    {
+        $str1 = 'QWERTYUIOPASDFGHJKLZXCVBNM';
+        $str2 = '1234567890';
+        $str3 = 'qwertyuiopasdfghjklzxcvbnm';
+        switch ($type) {
+            case 1:
+                $strs = $str1;
+                break;
+            case 2:
+                $strs = $str2;
+                break;
+            case 3:
+                $strs = $str3;
+                break;
+            case 4:
+                $strs = $str1 . $str2;
+                break;
+            case 5:
+                $strs = $str1 . $str3;
+                break;
+            case 6:
+                $strs = $str2 . $str3;
+                break;
+            default:
+                $strs = $str1.$str2.$str3;
+        }
+        return substr(str_shuffle($strs), mt_rand(0, strlen($strs) - ($length + 1)), $length);
+    }
+
 }
