@@ -16,18 +16,19 @@ $config = $di->getConfig();
 /**
  * Database connection is created based in the parameters defined in the configuration file
  */
-foreach ($config->db->toArray() as $key => $val) {
-    $class = 'Phalcon\Db\Adapter\Pdo\\' . $val['adapter'];
-    $params = $val;
+if (!empty($config->db)) {
+    foreach ($config->db->toArray() as $key => $val) {
+        $class = 'Phalcon\Db\Adapter\Pdo\\' . $val['adapter'];
+        $params = $val;
 
-    if ($val['adapter'] == 'Postgresql') {
-        unset($params['charset']);
+        if ($val['adapter'] == 'Postgresql') {
+            unset($params['charset']);
+        }
+
+        $connection = new $class($params);
+        $di->setShared($key, $connection);
     }
-
-    $connection = new $class($params);
-    $di->setShared($key, $connection);
 }
-
 
 // Start the session the first time when some component request the session service
 $di->setShared(
