@@ -30,9 +30,9 @@ class YarService
         } catch (\Exception $e) {
             if (get_class($e) === $this->application->getDI()->get('config')->exception) {
                 header('Content-type: application/json');
-                echo Helper::jsonEncode(['code' => $e->getCode(), 'msg' => $e->getMessage()]);
+                return  Helper::jsonEncode(['code' => $e->getCode(), 'msg' => $e->getMessage()]);
             } else {
-                echo '系统错误，请联系管理员';
+                return '系统错误，请联系管理员';
                 Log::write('system', $e->getMessage());
             }
         }
