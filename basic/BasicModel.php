@@ -228,7 +228,7 @@ abstract class BasicModel extends Model
      *
      * @author yls
      * @param array $data
-     * @return int|bool
+     * @return int
      */
     public function insertData(array $data)
     {
@@ -239,9 +239,8 @@ abstract class BasicModel extends Model
         if (isset($fields['update_by']) && !isset($data['update_by']) && !empty($this->admin)) $data['update_by'] = $this->admin['id'];
         $data   = $this->dealInsertData($data);
         $sql    = "INSERT INTO {$this->_targetTable} " . $data['val'];
-        $result = $this->execute($sql, $data['params']);
 
-        return $result;
+        return $this->execute($sql, $data['params']);
     }
 
     /**
@@ -250,7 +249,7 @@ abstract class BasicModel extends Model
      * @author yls
      * @param array $data
      * @param       $where
-     * @return int|bool
+     * @return int
      */
     public function updateData(array $data, $where)
     {
@@ -284,7 +283,7 @@ abstract class BasicModel extends Model
      *
      * @author yls
      * @param array $where
-     * @return int|bool
+     * @return int
      */
     public function delData(array $where)
     {
@@ -468,7 +467,7 @@ abstract class BasicModel extends Model
      *
      * @param string $sql
      * @param array  $params
-     * @return boolean|int     新增时返回新增的ID
+     * @return int     新增时返回新增的ID
      */
     private function execute($sql, $params)
     {
@@ -481,7 +480,7 @@ abstract class BasicModel extends Model
         } catch (\Exception $e) {
             Log::write('sql', 'SQL:' . $sql . ' VALUE:' . json_encode($params, JSON_UNESCAPED_UNICODE), 'error');
             Log::write('sql', $e->getMessage(), 'error');
-            return false;
+            return 0;
         }
     }
 
