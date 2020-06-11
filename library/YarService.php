@@ -32,8 +32,8 @@ class YarService
                 header('Content-type: application/json');
                 return  Helper::jsonEncode(['code' => $e->getCode(), 'msg' => $e->getMessage()]);
             } else {
+                Log::write('system', $e->getMessage().'|'.$e->getFile().'|'.$e->getLine());
                 return '系统错误，请联系管理员';
-                Log::write('system', $e->getMessage());
             }
         }
     }
