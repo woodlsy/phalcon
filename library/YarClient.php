@@ -39,11 +39,11 @@ class YarClient
      * @author yls
      * @param string      $url
      * @param array       $params
-     * @param string|null $callback
+     * @param string $callback
      */
-    public static function call(string $url, array $params = [], string $callback = null)
+    public static function call(string $url, array $params = [], string $callback = '\woodlsy\phalcon\library\YarClient::success_callback')
     {
-        \Yar_Concurrent_Client::call($url, "run", $params, $callback, '\application\library\YarClient::error_callback');
+        \Yar_Concurrent_Client::call($url, "run", $params, $callback, '\woodlsy\phalcon\library\YarClient::error_callback');
     }
 
     /**
@@ -67,5 +67,18 @@ class YarClient
     public static function error_callback($type, $error, $callinfo)
     {
         Log::write('callback', Helper::jsonEncode($error) . '|' . Helper::jsonEncode($callinfo), 'yar');
+    }
+
+    /**
+     * 默认回调函数
+     *
+     * @author yls
+     * @param $retval
+     * @param $callinfo
+     * @return bool
+     */
+    public static function success_callback($retval, $callinfo)
+    {
+        return true;
     }
 }

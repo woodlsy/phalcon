@@ -11,6 +11,7 @@ $config = [
     'modules'        => [
         'index',
     ],
+    'exception' => woodlsy\phalcon\library\DiyException::class,
     'yar_service'    => false,
     'limit_request'  => true, // 限制频繁请求 true 是 false 否
     'csrf'           => true, // 是否开启csrf true是 false 否

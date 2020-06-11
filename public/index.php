@@ -3,6 +3,7 @@
 use Phalcon\Debug;
 use Phalcon\Mvc\Application;
 use Phalcon\Di\FactoryDefault;
+use woodlsy\phalcon\library\Helper;
 use woodlsy\phalcon\library\Log;
 
 error_reporting(E_ALL);
@@ -66,10 +67,15 @@ try {
         $response->send();
     }
 } catch (Exception $e) {
-    if (true === (bool) $config->debug) {
-        echo $debug->onUncaughtException($e);
+    if (get_class($e) === $config->exception) {
+        header('Content-type: application/json');
+        echo Helper::jsonEncode(['code' => $e->getCode(), 'msg' => $e->getMessage()]);
     } else {
-        echo '系统错误，请联系管理员';
-        Log::write('system', $e->getMessage());
+        if (true === (bool) $config->debug) {
+            echo $debug->onUncaughtException($e);
+        } else {
+            echo '系统错误，请联系管理员';
+            Log::write('system', $e->getMessage());
+        }
     }
 }
