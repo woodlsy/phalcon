@@ -18,6 +18,8 @@ abstract class BasicModel extends Model
     //当前来连接的数据源
     protected $_targetDb = 'master';
 
+    protected $admin = null;
+
     /**
      * 初始化
      *
