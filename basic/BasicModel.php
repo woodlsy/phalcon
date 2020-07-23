@@ -77,6 +77,7 @@ abstract class BasicModel extends Model
      * array(
      *     'id' => [1,2,3],               // id in (1,2,3)
      *     'status' => ['in', [1,2]],     // status in (1,2)
+     *     'status' => ['not in', [1,2]],     // status not in (1,2)
      *     'name' => ['like', '%产品%'],   // name like '%产品%'
      *     'year' => ['between', [2015,2017]] // year between 2015 AND 2017
      *     'age' => ['>', 10]            // age > 10
@@ -116,6 +117,15 @@ abstract class BasicModel extends Model
                         $w[] = '?';
                     }
                     $fields[] = "`{$key}` in (" . implode(',', $w) . ')';
+                    foreach ($value[1] as $v) {
+                        $val[] = $v;
+                    }
+                } elseif ($value[0] == 'not in') {
+                    $w = [];
+                    for ($i = 1; $i <= count($value[1]); $i++) {
+                        $w[] = '?';
+                    }
+                    $fields[] = "`{$key}` not in (" . implode(',', $w) . ')';
                     foreach ($value[1] as $v) {
                         $val[] = $v;
                     }
@@ -354,7 +364,7 @@ abstract class BasicModel extends Model
      * @param string $orderBy
      * @return array|bool
      */
-    public function getAll($where, $fields = NULL, $orderBy = NULL)
+    public function getAll($where = [], $fields = NULL, $orderBy = NULL)
     {
         $whereSql = $this->dealWhere($where);
         $fields   = $this->dealFields($fields);

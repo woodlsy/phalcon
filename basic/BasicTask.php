@@ -10,6 +10,7 @@ class BasicTask extends Task
 {
 
     private $_lockKey = '';
+    private $_openLock = false;
 
     /**
      * 脚本执行前执行
@@ -39,6 +40,7 @@ class BasicTask extends Task
         }
         //redis锁
         Redis::getInstance()->setex($this->_lockKey, $time, 'lock');
+        $this->_openLock = true;
     }
 
 
@@ -49,8 +51,10 @@ class BasicTask extends Task
      */
     public function afterExecuteRoute()
     {
-        //删除锁
-        Redis::getInstance()->del($this->_lockKey);
+        if (true === $this->_openLock) {
+            //删除锁
+            Redis::getInstance()->del($this->_lockKey);
+        }
     }
 
 }
