@@ -35,6 +35,7 @@ abstract class BasicModel extends Model
                 throw new Exception('数据库连接失败');
             }
         }
+        $this->setTargetTable($this->_targetTable);
         $this->setWriteConnectionService($this->_targetDb);
         $this->setReadConnectionService($this->_targetDb);
     }
