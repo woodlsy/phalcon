@@ -201,4 +201,53 @@ class Helper
         return substr(str_shuffle($strs), mt_rand(0, strlen($strs) - ($length + 1)), $length);
     }
 
+    /**
+     * 从一个二维数组中获取某一个key键的值数组
+     *
+     * @author yls
+     * @param array  $data
+     * @param string $key
+     * @return array
+     */
+    public static function getKeyArrayByArray(array $data, string $key) : array
+    {
+        if (empty($data)) {
+            return [];
+        }
+        if (!is_array(current($data))) {
+            return [];
+        }
+        $arr = [];
+        foreach ($data as $value) {
+            if (isset($value[$key])) {
+                $arr[] = $value[$key];
+            }
+        }
+        return $arr;
+    }
+
+    /**
+     * 转化为展示前端的键值对
+     *
+     * @author yls
+     * @param array       $data
+     * @param string|null $key
+     * @param string|null $value
+     * @return array
+     */
+    public static function showPair(array $data, string $key = null, string $value = null) : array
+    {
+        if (empty($data)) {
+            return $data;
+        }
+        $arr = [];
+        foreach ($data as $k => $v) {
+            if (null === $key || null === $value) {
+                $arr[] = ['key' => $k, 'value' => $v];
+            } else {
+                $arr[] = ['key' => $v[$key], 'value' => $v[$value]];
+            }
+        }
+        return $arr;
+    }
 }
