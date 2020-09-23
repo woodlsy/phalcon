@@ -103,7 +103,7 @@ abstract class BasicModel extends Model
 
         foreach ($where as $key => $value) {
             if (empty($key) || is_numeric($key)) continue;
-            if (is_string($value[0])) $value[0] = trim(strtolower($value[0]));
+//            if (is_string($value[0])) $value[0] = trim(strtolower($value[0]));
             if (is_array($value)) {
                 if (in_array($value[0], ['>', '>=', '<', '<=', 'like', '!=', '<>'])) {
                     $fields[] = "`{$key}` {$value[0]} ?";
@@ -264,11 +264,11 @@ abstract class BasicModel extends Model
      * @param       $where
      * @return int
      */
-    public function updateData(array $data, $where)
+    public function updateData(array $data, $where, $updateDate = true)
     {
         $fields = $this->attribute();
-        if (isset($fields['update_at']) && !isset($data['update_at'])) $data['update_at'] = date('Y-m-d H:i:s');
-        if (isset($fields['update_by']) && !isset($data['update_by']) && !empty($this->admin)) $data['update_by'] = $this->admin['id'];
+        if (isset($fields['update_at']) && !isset($data['update_at']) && true === $updateDate) $data['update_at'] = date('Y-m-d H:i:s');
+        if (isset($fields['update_by']) && !isset($data['update_by']) && !empty($this->admin) && true === $updateDate) $data['update_by'] = $this->admin['id'];
         $data     = $this->dealUpdateData($data);
         $whereSql = $this->dealWhere($where);
         $params   = array_merge($data['params'], $whereSql['params']);
