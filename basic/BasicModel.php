@@ -96,14 +96,17 @@ abstract class BasicModel extends Model
      */
     private function dealWhere($where) : array
     {
-        if (empty($where)) return ['where' => '1=1', 'params' => []];
-        if (!is_array($where)) return ['where' => $where, 'params' => []];
+        if (empty($where))
+            return ['where' => '1=1', 'params' => []];
+        if (!is_array($where))
+            return ['where' => $where, 'params' => []];
 
         $fields = $val = [];
 
         foreach ($where as $key => $value) {
-            if (empty($key) || is_numeric($key)) continue;
-//            if (is_string($value[0])) $value[0] = trim(strtolower($value[0]));
+            if (empty($key) || is_numeric($key))
+                continue;
+            //            if (is_string($value[0])) $value[0] = trim(strtolower($value[0]));
             if (is_array($value)) {
                 if (in_array($value[0], ['>', '>=', '<', '<=', 'like', '!=', '<>'])) {
                     $fields[] = "`{$key}` {$value[0]} ?";
@@ -134,7 +137,8 @@ abstract class BasicModel extends Model
                     $childWhere  = [];
                     $childParams = [];
                     foreach ($value as $k => $v) {
-                        if ($k === 0) continue;
+                        if ($k === 0)
+                            continue;
                         $tmp_Where    = $this->dealWhere([$k => $v]);
                         $childWhere[] = $tmp_Where['where'];
                         $childParams  = empty($childParams) ? $tmp_Where['params'] : array_merge($childParams, $tmp_Where['params']);
@@ -184,7 +188,8 @@ abstract class BasicModel extends Model
         if ((empty($fields) || (is_string($fields) && '*' === trim($fields))) && !empty($defaultFields)) {
             $fields = array_keys($defaultFields);
         }
-        if (is_array($fields)) return '`' . implode('`,`', $fields) . '`';
+        if (is_array($fields))
+            return '`' . implode('`,`', $fields) . '`';
         return $fields;
     }
 
@@ -246,12 +251,16 @@ abstract class BasicModel extends Model
     public function insertData(array $data)
     {
         $fields = $this->attribute();
-        if (isset($fields['create_at']) && !isset($data['create_at'])) $data['create_at'] = date('Y-m-d H:i:s');
-        if (isset($fields['update_at']) && !isset($data['update_at'])) $data['update_at'] = date('Y-m-d H:i:s');
-        if (isset($fields['create_by']) && !isset($data['create_by']) && !empty($this->admin)) $data['create_by'] = $this->admin['id'];
-        if (isset($fields['update_by']) && !isset($data['update_by']) && !empty($this->admin)) $data['update_by'] = $this->admin['id'];
-        $data   = $this->dealInsertData($data);
-        $sql    = "INSERT INTO {$this->_targetTable} " . $data['val'];
+        if (isset($fields['create_at']) && !isset($data['create_at']))
+            $data['create_at'] = date('Y-m-d H:i:s');
+        if (isset($fields['update_at']) && !isset($data['update_at']))
+            $data['update_at'] = date('Y-m-d H:i:s');
+        if (isset($fields['create_by']) && !isset($data['create_by']) && !empty($this->admin))
+            $data['create_by'] = $this->admin['id'];
+        if (isset($fields['update_by']) && !isset($data['update_by']) && !empty($this->admin))
+            $data['update_by'] = $this->admin['id'];
+        $data = $this->dealInsertData($data);
+        $sql  = "INSERT INTO {$this->_targetTable} " . $data['val'];
 
         return $this->execute($sql, $data['params']);
     }
@@ -267,8 +276,10 @@ abstract class BasicModel extends Model
     public function updateData(array $data, $where, $updateDate = true)
     {
         $fields = $this->attribute();
-        if (isset($fields['update_at']) && !isset($data['update_at']) && true === $updateDate) $data['update_at'] = date('Y-m-d H:i:s');
-        if (isset($fields['update_by']) && !isset($data['update_by']) && !empty($this->admin) && true === $updateDate) $data['update_by'] = $this->admin['id'];
+        if (isset($fields['update_at']) && !isset($data['update_at']) && true === $updateDate)
+            $data['update_at'] = date('Y-m-d H:i:s');
+        if (isset($fields['update_by']) && !isset($data['update_by']) && !empty($this->admin) && true === $updateDate)
+            $data['update_by'] = $this->admin['id'];
         $data     = $this->dealUpdateData($data);
         $whereSql = $this->dealWhere($where);
         $params   = array_merge($data['params'], $whereSql['params']);
@@ -287,7 +298,8 @@ abstract class BasicModel extends Model
     {
         $fields = $this->attribute();
         $data   = ['is_deleted' => 1];
-        if (isset($fields['deleted_at']) && !isset($data['deleted_at'])) $data['deleted_at'] = date('Y-m-d H:i:s');
+        if (isset($fields['deleted_at']) && !isset($data['deleted_at']))
+            $data['deleted_at'] = date('Y-m-d H:i:s');
         return $this->updateData($data, $where);
     }
 
@@ -338,21 +350,27 @@ abstract class BasicModel extends Model
     /**
      * 获取列表(支持分页)
      *
+     * @author yls
      * @param        $where
      * @param string $orderBy
      * @param null   $offset
      * @param null   $row
      * @param null   $fields
+     * @param string $groupBy
      * @return array|bool
      */
-    public function getList($where, $orderBy = '', $offset = NUll, $row = NUll, $fields = NUll)
+    public function getList($where, $orderBy = '', $offset = NUll, $row = NUll, $fields = NUll, $groupBy = '')
     {
         $whereSql = $this->dealWhere($where);
         $fields   = $this->dealFields($fields);
-        if (!empty($orderBy)) $orderBy = 'order by ' . $orderBy;
+        if (!empty($orderBy))
+            $orderBy = 'order by ' . $orderBy;
+        if (!empty($groupBy))
+            $groupBy = 'group by ' . $groupBy;
 
-        $sql = "select {$fields} from {$this->_targetTable} where " . $whereSql['where'] . " {$orderBy}";
-        if ($offset !== NULl && ($offset !== false && $offset >= 0 && $row > 0)) $sql .= " limit {$offset},{$row}";
+        $sql = "select {$fields} from {$this->_targetTable} where " . $whereSql['where'] . " {$groupBy} " . " {$orderBy}";
+        if ($offset !== NULl && ($offset !== false && $offset >= 0 && $row > 0))
+            $sql .= " limit {$offset},{$row}";
         return $this->getRows($sql, $whereSql['params']);
     }
 
@@ -365,13 +383,16 @@ abstract class BasicModel extends Model
      * @param string $orderBy
      * @return array|bool
      */
-    public function getAll($where = [], $fields = NULL, $orderBy = NULL)
+    public function getAll($where = [], $fields = NULL, $orderBy = NULL, $groupBy = '')
     {
         $whereSql = $this->dealWhere($where);
         $fields   = $this->dealFields($fields);
-        if (!empty($orderBy)) $orderBy = 'order by ' . $orderBy;
+        if (!empty($orderBy))
+            $orderBy = 'order by ' . $orderBy;
+        if (!empty($groupBy))
+            $groupBy = 'group by ' . $groupBy;
 
-        $sql = "select {$fields} from {$this->_targetTable} where " . $whereSql['where'] . " {$orderBy}";
+        $sql = "select {$fields} from {$this->_targetTable} where " . $whereSql['where'] . " {$groupBy} " . " {$orderBy}";
         return $this->getRows($sql, $whereSql['params']);
     }
 
@@ -422,7 +443,8 @@ abstract class BasicModel extends Model
             $fieldStr = 'count(*) as count_num';
         }
         $row = $this->getOne($where, $fieldStr);
-        if (empty($row)) return 0;
+        if (empty($row))
+            return 0;
         return empty($fields) ? (int) $row['count_num'] : $row;
     }
 
