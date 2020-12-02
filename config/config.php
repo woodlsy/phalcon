@@ -39,6 +39,13 @@ $config = [
             'charset'  => 'utf8',
         ],
     ],
+    'example-rabbitMQ' => [
+        'host'      => '127.0.0.1',
+        'port'      => '5672',
+        'vhost'     => '/',  // '/' 默认的虚拟主机
+        'login'     => 'guest',
+        'password'  => 'guest',
+    ]
 ];
 
 if (file_exists(APP_PATH . '/config/config.php')) {

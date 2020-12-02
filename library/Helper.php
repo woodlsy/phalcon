@@ -78,8 +78,11 @@ class Helper
      * @param int $money
      * @return string
      */
-    public static function moneyToShow(int $money) : string
+    public static function moneyToShow($money) : string
     {
+        if (false !== strpos($money, '.')) {
+            return (string)$money;
+        }
         return sprintf("%.2f", $money / 100);
     }
 
