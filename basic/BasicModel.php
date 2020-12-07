@@ -57,7 +57,7 @@ abstract class BasicModel extends Model
      * @param $string
      * @return string
      */
-    private function loadPrefix($string = null) : string
+    protected function loadPrefix($string = null) : string
     {
         $db_prefix = null;
         if (!$db_prefix) {
@@ -94,7 +94,7 @@ abstract class BasicModel extends Model
      * @param string|array $where
      * @return array
      */
-    private function dealWhere($where) : array
+    protected function dealWhere($where) : array
     {
         if (empty($where))
             return ['where' => '1=1', 'params' => []];
@@ -182,7 +182,7 @@ abstract class BasicModel extends Model
      * @param string|array $fields
      * @return string
      */
-    private function dealFields($fields = '') : string
+    protected function dealFields($fields = '') : string
     {
         $defaultFields = $this->attribute();
         if ((empty($fields) || (is_string($fields) && '*' === trim($fields))) && !empty($defaultFields)) {
@@ -200,7 +200,7 @@ abstract class BasicModel extends Model
      * @param array $data
      * @return array
      */
-    private function dealInsertData(array $data) : array
+    protected function dealInsertData(array $data) : array
     {
         $value = $fieldArr = $fieldPlaceholderArr = [];
         foreach ($data as $key => $val) {
@@ -222,7 +222,7 @@ abstract class BasicModel extends Model
      * @param array $data
      * @return array
      */
-    private function dealUpdateData(array $data) : array
+    protected function dealUpdateData(array $data) : array
     {
         $value = $fieldArr = [];
         foreach ($data as $key => $val) {
@@ -479,7 +479,7 @@ abstract class BasicModel extends Model
      * @param array|null $bindParams
      * @return array
      */
-    private function readData(string $sql, array $bindParams = null)
+    protected function readData(string $sql, array $bindParams = null)
     {
         $sql = $this->loadPrefix($sql);
 
@@ -504,7 +504,7 @@ abstract class BasicModel extends Model
      * @param array  $params
      * @return int     新增时返回新增的ID
      */
-    private function execute($sql, $params)
+    protected function execute($sql, $params)
     {
         $sql = $this->loadPrefix($sql);
         try {
@@ -526,7 +526,7 @@ abstract class BasicModel extends Model
      * @param array $row
      * @return array
      */
-    private function dealResult(array $row) : array
+    protected function dealResult(array $row) : array
     {
         if (empty($row)) {
             return $row;
@@ -552,7 +552,7 @@ abstract class BasicModel extends Model
      * @param $val
      * @return string
      */
-    private function dealResultTime($val)
+    protected function dealResultTime($val)
     {
         if ('0000-00-00 00:00:00' == $val) {
             return '';
