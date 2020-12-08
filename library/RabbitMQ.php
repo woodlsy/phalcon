@@ -71,6 +71,7 @@ class RabbitMQ
     }
 
     /**
+     * direct模式
      * 设置mq 消息交换机exchange和消息队列 queue
      *
      * @param string $exchangeName
@@ -82,7 +83,7 @@ class RabbitMQ
      * @throws \AMQPExchangeException
      * @throws \AMQPQueueException
      */
-    public function set(string $exchangeName, string $routeKey, string $queueName)
+    public function setDirect(string $exchangeName, string $routeKey, string $queueName)
     {
         $this->_exchange = new AMQPExchange($this->_channel);
         $this->_exchange->setName($exchangeName);
@@ -123,14 +124,14 @@ class RabbitMQ
     /**
      * 消费消息
      *
+     * @param int $flags
      * @return bool
      */
-    public function consumer()
+    public function consumer($flags = AMQP_NOPARAM)
     {
-        $this->_mqMsg = $this->_queue->get();
+        $this->_mqMsg = $this->_queue->get($flags);
         if($this->_mqMsg){
-            $message = $this->_mqMsg->getBody();
-            return $message;
+            return $this->_mqMsg->getBody();
         }else{
             return false;
         }
@@ -157,7 +158,7 @@ class RabbitMQ
      */
     public function nack() {
         if($this->_mqMsg){
-            $this->_queue->nack($this->_mqMsg->getDeliveryTag(),16384);
+            $this->_queue->nack($this->_mqMsg->getDeliveryTag(), AMQP_REQUEUE);
         }else{
             throw new \Exception('消息不存在!');
         }
