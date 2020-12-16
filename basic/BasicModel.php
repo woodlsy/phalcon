@@ -188,8 +188,17 @@ abstract class BasicModel extends Model
         if ((empty($fields) || (is_string($fields) && '*' === trim($fields))) && !empty($defaultFields)) {
             $fields = array_keys($defaultFields);
         }
-        if (is_array($fields))
-            return '`' . implode('`,`', $fields) . '`';
+        if (is_array($fields)){
+            $selectFields = [];
+            foreach ($fields as $key => $value) {
+                if (is_numeric($key)) {
+                    $selectFields[] = '`'.$value.'`';
+                } else {
+                    $selectFields[] = '`'.$key.'` as '.$value;
+                }
+            }
+            return implode(',', $selectFields);
+        }
         return $fields;
     }
 
