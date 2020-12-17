@@ -492,6 +492,10 @@ abstract class BasicModel extends Model
     {
         $sql = $this->loadPrefix($sql);
 
+        if (true === DI::getDefault()->get('config')->pSql){
+            Log::write('read', 'SQL:' . $sql . ' VALUE:' . json_encode($bindParams, JSON_UNESCAPED_UNICODE), 'sql');
+        }
+
         //执行SQL
         try {
             $this->lastSql = $sql;
@@ -516,6 +520,9 @@ abstract class BasicModel extends Model
     protected function execute($sql, $params)
     {
         $sql = $this->loadPrefix($sql);
+        if (true === DI::getDefault()->get('config')->pSql){
+            Log::write('write', 'SQL:' . $sql . ' VALUE:' . json_encode($params, JSON_UNESCAPED_UNICODE), 'sql');
+        }
         try {
             $this->lastSql = $sql;
             $this->getWriteConnection()->execute($sql, $params);
