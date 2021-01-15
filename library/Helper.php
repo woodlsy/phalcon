@@ -107,7 +107,7 @@ class Helper
      * @param string $valueField
      * @return array
      */
-    public static function arrayToKeyValue(array $array, string $keyField, string $valueField) : array
+    public static function getPairs(array $array, string $keyField, string $valueField) : array
     {
         if (is_array(current($array))) {
             $arr = [];
@@ -127,7 +127,7 @@ class Helper
      * @param string $field
      * @return array
      */
-    public static function indexArray(array $arr, string $field)
+    public static function getIndexArray(array $arr, string $field)
     {
         if (empty($arr)) {
             return $arr;
@@ -212,7 +212,7 @@ class Helper
      * @param string $key
      * @return array
      */
-    public static function getKeyArrayByArray(array $data, string $key) : array
+    public static function getValueArray(array $data, string $key) : array
     {
         if (empty($data)) {
             return [];
