@@ -435,7 +435,7 @@ abstract class BasicModel extends Model
      * @param array $fields
      * @return array|int
      */
-    public function getCount($where, array $fields = [])
+    public function getCount($where, array $fields = [], $groupBy = '')
     {
         if (!empty($fields)) {
             $fieldStr = [];
