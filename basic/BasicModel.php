@@ -20,6 +20,9 @@ abstract class BasicModel extends Model
 
     protected $admin = null;
 
+    // 是否强制转换字段类型
+    protected $isCast = false;
+
     /**
      * 初始化
      *
@@ -35,6 +38,7 @@ abstract class BasicModel extends Model
                 throw new Exception('数据库连接失败');
             }
         }
+        $this->isCast = (bool)DI::getDefault()->get('config')->isCast;
         $this->setTargetTable($this->_targetTable);
         $this->setWriteConnectionService($this->_targetDb);
         $this->setReadConnectionService($this->_targetDb);
@@ -548,6 +552,10 @@ abstract class BasicModel extends Model
             return $row;
         }
 
+        if (true === $this->isCast) {
+            $row = $this->castType($row);
+        }
+
         foreach ($row as $key => &$val) {
             if (is_array($val)) {
                 foreach ($val as $k => &$v) {
@@ -586,5 +594,42 @@ abstract class BasicModel extends Model
     public function getLastSql() : ?string
     {
         return $this->lastSql;
+    }
+
+    /**
+     * 强制转换类型
+     *
+     * @author yls
+     * @param array $data
+     * @return array
+     */
+    public function castType(array $data)
+    {
+        if (empty($data)) {
+            return $data;
+        }
+        $sql = 'SHOW FULL COLUMNS FROM ' .  $this->_targetTable;
+        $fields = $this->getRows($sql);
+
+        foreach ($data as $key => $value) {
+            if (is_array($value) && is_numeric($key)) {
+                $data[$key] = $this->castType($value);
+            } else {
+                foreach ($fields as $filed) {
+                    if ($filed['Field'] === $key) {
+                        if (
+                            0 === strpos($filed['Type'], 'int(') ||
+                            0 === strpos($filed['Type'], 'tinyint(') ||
+                            0 === strpos($filed['Type'], 'bigint(') ||
+                            0 === strpos($filed['Type'], 'mediumint(') ||
+                            0 === strpos($filed['Type'], 'smallint(')
+                        ) {
+                            $data[$key] = (int)$value;
+                        }
+                    }
+                }
+            }
+        }
+        return $data;
     }
 }
