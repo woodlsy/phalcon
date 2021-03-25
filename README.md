@@ -31,6 +31,8 @@ require_once 'vendor/woodlsy/phalcon/cli.php';
     'viewsDir'       => APP_PATH . '/views/',
     'debug'          => true,
     'suffix' => 'html', // URL后缀
+    'pSql'             => false, // 打印sql
+    'isCast'           => false, // 强制转换数据类型
     'redis' => [
         'host' =>'127.0.0.1',
         'port' =>'6379',

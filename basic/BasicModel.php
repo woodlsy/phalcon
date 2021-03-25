@@ -3,7 +3,6 @@
 namespace woodlsy\phalcon\basic;
 
 use woodlsy\phalcon\library\Log;
-use woodlsy\phalcon\library\Helper;
 use Phalcon\DI;
 use Phalcon\Mvc\Model;
 use Phalcon\Db;
@@ -38,7 +37,7 @@ abstract class BasicModel extends Model
                 throw new Exception('数据库连接失败');
             }
         }
-        $this->isCast = (bool)DI::getDefault()->get('config')->isCast;
+        $this->isCast = (bool) DI::getDefault()->get('config')->isCast;
         $this->setTargetTable($this->_targetTable);
         $this->setWriteConnectionService($this->_targetDb);
         $this->setReadConnectionService($this->_targetDb);
@@ -74,7 +73,7 @@ abstract class BasicModel extends Model
             $string    = '{{' . strtolower($string) . '}}';
         }
 
-        return preg_replace('/\{\{(.+?)\}\}/', $db_prefix . '\\1', $string);
+        return preg_replace('/{{(.+?)}}/', $db_prefix . '\\1', $string);
     }
 
     /**
@@ -192,13 +191,13 @@ abstract class BasicModel extends Model
         if ((empty($fields) || (is_string($fields) && '*' === trim($fields))) && !empty($defaultFields)) {
             $fields = array_keys($defaultFields);
         }
-        if (is_array($fields)){
+        if (is_array($fields)) {
             $selectFields = [];
             foreach ($fields as $key => $value) {
                 if (is_numeric($key)) {
-                    $selectFields[] = '`'.$value.'`';
+                    $selectFields[] = '`' . $value . '`';
                 } else {
-                    $selectFields[] = '`'.$key.'` as '.$value;
+                    $selectFields[] = '`' . $key . '` as ' . $value;
                 }
             }
             return implode(',', $selectFields);
@@ -284,6 +283,7 @@ abstract class BasicModel extends Model
      * @author yls
      * @param array $data
      * @param       $where
+     * @param bool  $updateDate
      * @return int
      */
     public function updateData(array $data, $where, $updateDate = true)
@@ -352,11 +352,12 @@ abstract class BasicModel extends Model
      * @param        $where
      * @param string $fields
      * @param string $orderBy
+     * @param string $groupBy
      * @return array
      */
-    public function getOne($where, $fields = "", string $orderBy = "") : array
+    public function getOne($where, $fields = "", string $orderBy = "", string $groupBy = '') : array
     {
-        $data = $this->getList($where, $orderBy, null, null, $fields);
+        $data = $this->getList($where, $orderBy, null, null, $fields, $groupBy);
         return isset($data[0]) ? $data[0] : array();
     }
 
@@ -376,10 +377,12 @@ abstract class BasicModel extends Model
     {
         $whereSql = $this->dealWhere($where);
         $fields   = $this->dealFields($fields);
-        if (!empty($orderBy))
+        if (!empty($orderBy)) {
             $orderBy = 'order by ' . $orderBy;
-        if (!empty($groupBy))
+        }
+        if (!empty($groupBy)) {
             $groupBy = 'group by ' . $groupBy;
+        }
 
         $sql = "select {$fields} from {$this->_targetTable} where " . $whereSql['where'] . " {$groupBy} " . " {$orderBy}";
         if ($offset !== NULl && ($offset !== false && $offset >= 0 && $row > 0))
@@ -394,34 +397,29 @@ abstract class BasicModel extends Model
      * @param        $where
      * @param null   $fields
      * @param string $orderBy
+     * @param string $groupBy
      * @return array|bool
      */
     public function getAll($where = [], $fields = NULL, $orderBy = NULL, $groupBy = '')
     {
-        $whereSql = $this->dealWhere($where);
-        $fields   = $this->dealFields($fields);
-        if (!empty($orderBy))
-            $orderBy = 'order by ' . $orderBy;
-        if (!empty($groupBy))
-            $groupBy = 'group by ' . $groupBy;
-
-        $sql = "select {$fields} from {$this->_targetTable} where " . $whereSql['where'] . " {$groupBy} " . " {$orderBy}";
-        return $this->getRows($sql, $whereSql['params']);
+        return $this->getList($where, $orderBy, null, null, $fields, $groupBy);
     }
 
     /**
      * 获取多条数据
      *
-     * @param string $sql
-     * @param array  $params
+     * @author yls
+     * @param       $sql
+     * @param array $params
+     * @param bool  $isDeal 是否对数据进行处理
      * @return array|bool
      */
-    public function getRows($sql, $params = [])
+    public function getRows($sql, $params = [], $isDeal = true)
     {
         try {
             $rows = $this->readData($sql, $params);
             if ($rows && !empty($rows)) {
-                return $this->dealResult($rows);
+                return true === $isDeal ? $this->dealResult($rows) : $rows;
             } else {
                 return [];
             }
@@ -435,8 +433,9 @@ abstract class BasicModel extends Model
      * 获取总条数
      *
      * @author yls
-     * @param       $where
-     * @param array $fields
+     * @param        $where
+     * @param array  $fields
+     * @param string $groupBy
      * @return array|int
      */
     public function getCount($where, array $fields = [], $groupBy = '')
@@ -455,7 +454,7 @@ abstract class BasicModel extends Model
         } else {
             $fieldStr = 'count(*) as count_num';
         }
-        $row = $this->getOne($where, $fieldStr);
+        $row = $this->getOne($where, $fieldStr, '', $groupBy);
         if (empty($row))
             return 0;
         return empty($fields) ? (int) $row['count_num'] : $row;
@@ -480,8 +479,7 @@ abstract class BasicModel extends Model
                 $fieldStr[] = "sum(`{$val}`) as {$val}_sum";
             }
         }
-        $row = $this->getOne($where, implode(',', $fieldStr));
-        return $row;
+        return $this->getOne($where, implode(',', $fieldStr));
     }
 
     /**
@@ -496,7 +494,7 @@ abstract class BasicModel extends Model
     {
         $sql = $this->loadPrefix($sql);
 
-        if (true === DI::getDefault()->get('config')->pSql){
+        if (true === DI::getDefault()->get('config')->pSql) {
             Log::write('read', 'SQL:' . $sql . ' VALUE:' . json_encode($bindParams, JSON_UNESCAPED_UNICODE), 'sql');
         }
 
@@ -524,7 +522,7 @@ abstract class BasicModel extends Model
     protected function execute($sql, $params)
     {
         $sql = $this->loadPrefix($sql);
-        if (true === DI::getDefault()->get('config')->pSql){
+        if (true === DI::getDefault()->get('config')->pSql) {
             Log::write('write', 'SQL:' . $sql . ' VALUE:' . json_encode($params, JSON_UNESCAPED_UNICODE), 'sql');
         }
         try {
@@ -532,7 +530,7 @@ abstract class BasicModel extends Model
             $this->getWriteConnection()->execute($sql, $params);
 
             return $this->getWriteConnection()->lastInsertId() > 0 ? $this->getWriteConnection()->lastInsertId() : $this->getWriteConnection()->affectedRows();
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::write('sql', 'SQL:' . $sql . ' VALUE:' . json_encode($params, JSON_UNESCAPED_UNICODE), 'error');
             Log::write('sql', $e->getMessage(), 'error');
             return 0;
@@ -555,7 +553,6 @@ abstract class BasicModel extends Model
         if (true === $this->isCast) {
             $row = $this->castType($row);
         }
-
         foreach ($row as $key => &$val) {
             if (is_array($val)) {
                 foreach ($val as $k => &$v) {
@@ -578,7 +575,7 @@ abstract class BasicModel extends Model
      */
     protected function dealResultTime($val)
     {
-        if ('0000-00-00 00:00:00' == $val) {
+        if ('0000-00-00 00:00:00' === $val || '1990-01-01 00:00:00' === $val || '1990-01-01' === $val) {
             return '';
         } else {
             return $val;
@@ -605,11 +602,12 @@ abstract class BasicModel extends Model
      */
     public function castType(array $data)
     {
+
         if (empty($data)) {
             return $data;
         }
-        $sql = 'SHOW FULL COLUMNS FROM ' .  $this->_targetTable;
-        $fields = $this->getRows($sql);
+        $sql    = 'SHOW FULL COLUMNS FROM ' . $this->_targetTable;
+        $fields = $this->getRows($sql, [], false);
 
         foreach ($data as $key => $value) {
             if (is_array($value) && is_numeric($key)) {
@@ -624,7 +622,8 @@ abstract class BasicModel extends Model
                             0 === strpos($filed['Type'], 'mediumint(') ||
                             0 === strpos($filed['Type'], 'smallint(')
                         ) {
-                            $data[$key] = (int)$value;
+
+                            $data[$key] = (int) $value;
                         }
                     }
                 }
