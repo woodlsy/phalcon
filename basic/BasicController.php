@@ -227,4 +227,56 @@ class BasicController extends Controller
         return $value;
     }
 
+
+    /**
+     * tmp
+     * 表属性
+     *
+     * @author yls
+     * @param string $database
+     * @param string $table
+     * @return string
+     */
+    protected function getTableAttribute(string $database, string $table):string
+    {
+        $data = '/**
+     * 库名
+     *
+     * @var string
+     */
+    protected $_targetDb = \''.$database.'\';
+    
+    ';
+        $tableArr = explode('_', $table, 2);
+        $tableName = count($tableArr) >= 2 ? '{{'.$tableArr[1].'}}' : $table;
+        $data .='/**
+     * 表名
+     *
+     * @var string
+     */
+    protected $_targetTable = \''.$tableName.'\';
+    
+    ';
+
+        $sql = 'SHOW FULL COLUMNS FROM '.$table;
+
+        $connection = \Phalcon\DI::getDefault()->get($database);
+        $table = $connection->fetchAll($sql);
+        $attribute = [];
+        foreach ($table as $value) {
+            $attribute[$value['Field']] = $value['Comment'] ?: $value['Field'];
+        }
+        $data .='/**
+     * 表字段属性
+     *
+     * @return array
+     */
+     public function attribute(){
+'.
+            'return '.var_export($attribute, true).';'.
+            '
+            }';
+        return '<pre>'.$data.'</pre>';
+    }
+
 }

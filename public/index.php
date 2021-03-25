@@ -69,7 +69,7 @@ try {
 } catch (Exception $e) {
     if (get_class($e) === $config->exception) {
         header('Content-type: application/json');
-        echo Helper::jsonEncode(['code' => $e->getCode(), 'msg' => $e->getMessage()]);
+        echo Helper::jsonEncode(['code' => $e->getCode() ?: 1, 'msg' => $e->getMessage()]);
     } else {
         if (true === (bool) $config->debug) {
             echo $debug->onUncaughtException($e);

@@ -22,6 +22,7 @@ $config = [
     'debug'            => true,
     'suffix'           => '', // url后缀
     'pSql'             => false, // 打印sql
+    'isCast'           => false, // 强制转换数据类型
     'example-redis'    => [
         'host'     => '127.0.0.1',
         'port'     => '6379',
