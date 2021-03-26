@@ -37,7 +37,6 @@ abstract class BasicModel extends Model
                 throw new Exception('数据库连接失败');
             }
         }
-        $this->isCast = (bool) DI::getDefault()->get('config')->isCast;
         $this->setTargetTable($this->_targetTable);
         $this->setWriteConnectionService($this->_targetDb);
         $this->setReadConnectionService($this->_targetDb);
@@ -550,6 +549,7 @@ abstract class BasicModel extends Model
             return $row;
         }
 
+        $this->isCast = (bool)DI::getDefault()->get('config')->isCast;
         if (true === $this->isCast) {
             $row = $this->castType($row);
         }

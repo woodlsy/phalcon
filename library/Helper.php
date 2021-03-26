@@ -304,5 +304,31 @@ class Helper
         return !boolval($num & 1);
     }
 
-
+    /**
+     * 数组递归成树形结构
+     *
+     * @author yls
+     * @param array  $data
+     * @param string $idName ID字段名
+     * @param string $parentIdFieldName 父级字段名
+     * @param int    $parentId 从第几级开始
+     * @return array
+     */
+    public static function getTreeStructure(array $data, string $idName = 'id', string $parentIdFieldName = 'parent_id', int $parentId = 0) : array
+    {
+        if (empty($data)) {
+            return [];
+        }
+        $arr = [];
+        foreach ($data as $value) {
+            if ($parentId === (int) $value[$parentIdFieldName]) {
+                $children = self::getTreeStructure($data, $idName, $parentIdFieldName, $value[$idName]);
+                if (!empty($children)) {
+                    $value['children'] = $children;
+                }
+                $arr[] = $value;
+            }
+        }
+        return $arr;
+    }
 }
