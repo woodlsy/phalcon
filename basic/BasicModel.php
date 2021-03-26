@@ -213,14 +213,51 @@ abstract class BasicModel extends Model
      */
     protected function dealInsertData(array $data) : array
     {
+        $formatInsertData = $this->_getFormatInsertData($data);
+        return ['val' => $formatInsertData['fieldStr'] . ' VALUES ' . $formatInsertData['valueStr'], 'params' => $formatInsertData['params']];
+    }
+
+    /**
+     * 格式化处理要新增的数据
+     *
+     * @author yls
+     * @param array $data
+     * @return array
+     */
+    private function _getFormatInsertData(array $data) : array
+    {
         $value = $fieldArr = $fieldPlaceholderArr = [];
         foreach ($data as $key => $val) {
             $fieldArr[]            = $key;
             $fieldPlaceholderArr[] = '?';
             $value[]               = $val;
         }
-        $str = '(`' . implode('`,`', $fieldArr) . '`) VALUES (' . implode(',', $fieldPlaceholderArr) . ')';
-        return ['val' => $str, 'params' => $value];
+        $fieldStr = '(`' . implode('`,`', $fieldArr) . '`)';
+        $valueStr = '(' . implode(',', $fieldPlaceholderArr) . ')';
+        return ['fieldStr' => $fieldStr, 'valueStr' => $valueStr, 'params' => $value];
+    }
+
+    /**
+     * 批量处理要新增的数据
+     *
+     * @author yls
+     * @param array $data
+     * @return array
+     */
+    public function dealInsertDataBatch(array $data) : array
+    {
+        $str      = '';
+        $valueStr = $params = [];
+        foreach ($data as $value) {
+            $formatInsertData = $this->_getFormatInsertData($value);
+            if ('' === $str) {
+                $str = $formatInsertData['fieldStr'] . ' VALUES ';
+            }
+            $valueStr[] = $formatInsertData['valueStr'];
+            $params     = array_merge($params, $formatInsertData['params']);
+        }
+        $str .= implode(',', $valueStr);
+        return ['val' => $str, 'params' => $params];
     }
 
     /**
@@ -261,19 +298,58 @@ abstract class BasicModel extends Model
      */
     public function insertData(array $data)
     {
-        $fields = $this->attribute();
-        if (isset($fields['create_at']) && !isset($data['create_at']))
-            $data['create_at'] = date('Y-m-d H:i:s');
-        if (isset($fields['update_at']) && !isset($data['update_at']))
-            $data['update_at'] = date('Y-m-d H:i:s');
-        if (isset($fields['create_by']) && !isset($data['create_by']) && !empty($this->admin))
-            $data['create_by'] = $this->admin['id'];
-        if (isset($fields['update_by']) && !isset($data['update_by']) && !empty($this->admin))
-            $data['update_by'] = $this->admin['id'];
+        $data = $this->_dealInsertFields($data);
         $data = $this->dealInsertData($data);
         $sql  = "INSERT INTO {$this->_targetTable} " . $data['val'];
 
         return $this->execute($sql, $data['params']);
+    }
+
+    /**
+     * 批量新增
+     *
+     * @author yls
+     * @param array $data
+     * @return int
+     */
+    public function insertDataBatch(array $data) : int
+    {
+        $data = $this->_dealInsertFields($data);
+        $data = $this->dealInsertDataBatch($data);
+        $sql  = "INSERT INTO {$this->_targetTable} " . $data['val'];
+
+        return $this->execute($sql, $data['params']);
+    }
+
+    /**
+     * 处理待新增的数据字段
+     *
+     * @author yls
+     * @param array $data
+     * @return array
+     */
+    private function _dealInsertFields(array $data)
+    {
+        if (!is_array(current($data)) || !isset($data[0])) {
+            $fields = $this->attribute();
+            if (isset($fields['create_at']) && !isset($data['create_at'])) {
+                $data['create_at'] = date('Y-m-d H:i:s');
+            }
+            if (isset($fields['update_at']) && !isset($data['update_at'])) {
+                $data['update_at'] = date('Y-m-d H:i:s');
+            }
+            if (isset($fields['create_by']) && !isset($data['create_by']) && !empty($this->admin)) {
+                $data['create_by'] = $this->admin['id'];
+            }
+            if (isset($fields['update_by']) && !isset($data['update_by']) && !empty($this->admin)) {
+                $data['update_by'] = $this->admin['id'];
+            }
+            return $data;
+        }
+        foreach ($data as $key => $value) {
+            $data[$key] = $this->_dealInsertFields($value);
+        }
+        return $data;
     }
 
     /**
@@ -549,7 +625,7 @@ abstract class BasicModel extends Model
             return $row;
         }
 
-        $this->isCast = (bool)DI::getDefault()->get('config')->isCast;
+        $this->isCast = (bool) DI::getDefault()->get('config')->isCast;
         if (true === $this->isCast) {
             $row = $this->castType($row);
         }
