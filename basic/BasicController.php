@@ -244,7 +244,7 @@ class BasicController extends Controller
      *
      * @var string
      */
-    protected $_targetDb = \''.$database.'\';
+    public $_targetDb = \''.$database.'\';
     
     ';
         $tableArr = explode('_', $table, 2);
