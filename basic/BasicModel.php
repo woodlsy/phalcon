@@ -2,11 +2,13 @@
 
 namespace woodlsy\phalcon\basic;
 
+use woodlsy\phalcon\library\Helper;
 use woodlsy\phalcon\library\Log;
 use Phalcon\DI;
 use Phalcon\Mvc\Model;
 use Phalcon\Db;
 use Exception;
+use woodlsy\phalcon\library\Redis;
 
 abstract class BasicModel extends Model
 {
@@ -682,8 +684,13 @@ abstract class BasicModel extends Model
         if (empty($data)) {
             return $data;
         }
-        $sql    = 'SHOW FULL COLUMNS FROM ' . $this->_targetTable;
-        $fields = $this->getRows($sql, [], false);
+        $key = 'COLUMNS_'.$this->_targetTable;
+        if (!Redis::getInstance()->exists($key)) {
+            $sql    = 'SHOW FULL COLUMNS FROM ' . $this->_targetTable;
+            $fields = $this->getRows($sql, [], false);
+            Redis::getInstance()->setex($key, 600, Helper::jsonEncode($fields));
+        }
+        $fields = Helper::jsonDecode(Redis::getInstance()->get($key));
 
         foreach ($data as $key => $value) {
             if (is_array($value) && is_numeric($key)) {

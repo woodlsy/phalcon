@@ -22,19 +22,7 @@ class Helper
      */
     public static function getValueArray(array $data, string $key) : array
     {
-        if (empty($data)) {
-            return [];
-        }
-        if (!is_array(current($data))) {
-            return [];
-        }
-        $arr = [];
-        foreach ($data as $value) {
-            if (isset($value[$key])) {
-                $arr[] = $value[$key];
-            }
-        }
-        return $arr;
+        return array_column($data, $key);
     }
 
     /**
@@ -51,6 +39,7 @@ class Helper
         if (empty($data)) {
             return $data;
         }
+
         $arr = [];
         foreach ($data as $k => $v) {
             if (null === $key || null === $value) {
@@ -74,11 +63,7 @@ class Helper
     public static function getPairs(array $array, string $keyField, string $valueField) : array
     {
         if (is_array(current($array))) {
-            $arr = [];
-            foreach ($array as $value) {
-                $arr[$value[$keyField]] = $value[$valueField];
-            }
-            return $arr;
+            return array_column($array, $valueField, $keyField);
         }
         return $array;
     }
