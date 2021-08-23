@@ -16,8 +16,10 @@ require_once 'vendor/woodlsy/phalcon/cli.php';
 ```
 
 ### 配置文件
+配置文件有两种方式
+- application/config/config.php
 ```php
-[
+return [
     'open_modules' => true, // 是否开启多模块，true 是 false 否
     'modules' => [
         'index',
@@ -51,5 +53,12 @@ require_once 'vendor/woodlsy/phalcon/cli.php';
             'charset'  => 'utf8',
         ],
     ],
-]
+];
 ```
+
+- .env（优先）
+
+env文件放在根目录下，配置的内容和config一致，只是写法不同而已，具体可以参考[.example_env](.example_env)
+env文件中定义的配置，也可在程序中通过getenv('DEBUG')来获取，需要注意的是一下两点：
+1. 根据大众的惯例，env中的KEY都会转为大写
+2. 因PHP读取env文件的限制，key不能为null，yes，no，true 和 false，而value为null，no 和 false 等效于 ""，value为 yes 和 true 等效于 "1"。需自己进行类型的转换。

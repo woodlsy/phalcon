@@ -50,9 +50,34 @@ $config = [
     ]
 ];
 
+$envData = [];
+if (is_file(BASE_PATH . '/.env')) {
+    $envData = parse_ini_file(BASE_PATH . '/.env', true);
+    foreach ($envData as $key => $value) {
+        $name = strtoupper($key);
+
+        if (is_array($value)) {
+            foreach ($value as $k => $val) {
+                $item = $name . '.' . strtoupper($k);
+                if (is_array($val)) {
+                    foreach ($val as $kk => $vv) {
+                        $threeName = $item . '.' . strtoupper($kk);
+                        putenv("$threeName=$vv");
+                    }
+                } else {
+                    putenv("$item=$val");
+                }
+            }
+        } else {
+            putenv("$name=$value");
+        }
+    }
+}
 if (file_exists(APP_PATH . '/config/config.php')) {
     $appConfig = require_once APP_PATH . '/config/config.php';
     $config    = array_merge($config, $appConfig);
 }
-
+if (!empty($envData)) {
+    $config    = array_merge($config, $envData);
+}
 return new Config($config);
