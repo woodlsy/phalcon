@@ -434,7 +434,7 @@ abstract class BasicModel extends Model
      */
     public function getOne($where, $fields = "", string $orderBy = "", string $groupBy = '') : array
     {
-        $data = $this->getList($where, $orderBy, null, null, $fields, $groupBy);
+        $data = $this->getList($where, $orderBy, 0, 1, $fields, $groupBy);
         return isset($data[0]) ? $data[0] : array();
     }
 
@@ -571,17 +571,20 @@ abstract class BasicModel extends Model
     {
         $sql = $this->loadPrefix($sql);
 
-        if (true === DI::getDefault()->get('config')->pSql) {
-            Log::write('read', 'SQL:' . $sql . ' VALUE:' . json_encode($bindParams, JSON_UNESCAPED_UNICODE), 'sql');
-        }
-
         //执行SQL
         try {
+            $startTime     = microtime(true);
             $this->lastSql = $sql;
             $connection    = $this->getReadConnection();
             $result        = $connection->query($sql, $bindParams);
             $result->setFetchMode(Db::FETCH_ASSOC);
-            return $result->fetchAll();
+            $endTime  = microtime(true);
+            $diffTime = ($endTime - $startTime) * 1000;
+            $readData = $result->fetchAll();
+            if (true === DI::getDefault()->get('config')->pSql) {
+                Log::write('read', "【{$diffTime}】" . 'SQL:' . $sql . ' VALUE:' . json_encode($bindParams, JSON_UNESCAPED_UNICODE), 'sql');
+            }
+            return $readData;
         } catch (Exception $e) {
             Log::write('sql', 'SQL:' . $sql . ' VALUE:' . json_encode($bindParams, JSON_UNESCAPED_UNICODE), 'error');
             Log::write('sql', $e->getMessage(), 'error');
@@ -599,13 +602,16 @@ abstract class BasicModel extends Model
     protected function execute($sql, $params)
     {
         $sql = $this->loadPrefix($sql);
-        if (true === DI::getDefault()->get('config')->pSql) {
-            Log::write('write', 'SQL:' . $sql . ' VALUE:' . json_encode($params, JSON_UNESCAPED_UNICODE), 'sql');
-        }
+
         try {
+            $startTime     = microtime(true);
             $this->lastSql = $sql;
             $this->getWriteConnection()->execute($sql, $params);
-
+            $endTime  = microtime(true);
+            $diffTime = ($endTime - $startTime) * 1000;
+            if (true === DI::getDefault()->get('config')->pSql) {
+                Log::write('write', "【{$diffTime}】" . 'SQL:' . $sql . ' VALUE:' . json_encode($params, JSON_UNESCAPED_UNICODE), 'sql');
+            }
             return $this->getWriteConnection()->lastInsertId() > 0 ? $this->getWriteConnection()->lastInsertId() : $this->getWriteConnection()->affectedRows();
         } catch (Exception $e) {
             Log::write('sql', 'SQL:' . $sql . ' VALUE:' . json_encode($params, JSON_UNESCAPED_UNICODE), 'error');
@@ -684,7 +690,7 @@ abstract class BasicModel extends Model
         if (empty($data)) {
             return $data;
         }
-        $key = 'COLUMNS_'.$this->_targetTable;
+        $key = 'COLUMNS_' . $this->_targetTable;
         if (!Redis::getInstance()->exists($key)) {
             $sql    = 'SHOW FULL COLUMNS FROM ' . $this->_targetTable;
             $fields = $this->getRows($sql, [], false);

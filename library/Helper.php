@@ -233,6 +233,30 @@ class Helper
     }
 
     /**
+     * 批量手机号脱敏
+     *
+     * @author yls
+     * @param array $data
+     * @return array
+     */
+    public static function enMobileBatch(array $data):array
+    {
+        if (empty($data)) {
+            return $data;
+        }
+        if (is_array(current($data))) {
+            foreach ($data as &$value) {
+                $value = self::enMobileBatch($value);
+            }
+        } else {
+            if (isset($data['mobile'])) {
+                $data['mobile'] = self::enMobile($data['mobile']);
+            }
+        }
+        return $data;
+    }
+
+    /**
      * 位运算 判断$needle是否包含在$haystack中
      *
      * @author yls
