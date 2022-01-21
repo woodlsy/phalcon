@@ -5,6 +5,7 @@ use Phalcon\Mvc\Application;
 use Phalcon\Di\FactoryDefault;
 use woodlsy\phalcon\library\Helper;
 use woodlsy\phalcon\library\Log;
+use woodlsy\phalcon\library\Redis;
 
 error_reporting(E_ALL);
 
@@ -68,8 +69,16 @@ try {
     }
 } catch (Exception $e) {
     if (get_class($e) === $config->exception) {
+        if (true === $application->config->limit_request && $application->request->isPost()) {
+            $moduleName     = $application->router->getModuleName();
+            $controllerName = $application->router->getControllerName();
+            $actionName     = $application->router->getActionName();
+            $key            = session_id() . '_controller_lock_' . $moduleName . '_' . $controllerName . '_' . $actionName;
+            Redis::getInstance()->del($key);
+        }
+
         header('Content-type: application/json');
-        echo Helper::jsonEncode(['code' => $e->getCode() ?: 1, 'msg' => $e->getMessage()]);
+        echo Helper::jsonEncode(['code' => $e->getCode() ? : 1, 'msg' => $e->getMessage()]);
     } else {
         if (true === (bool) $config->debug) {
             echo $debug->onUncaughtException($e);

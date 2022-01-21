@@ -579,7 +579,7 @@ abstract class BasicModel extends Model
             $result        = $connection->query($sql, $bindParams);
             $result->setFetchMode(Db::FETCH_ASSOC);
             $endTime  = microtime(true);
-            $diffTime = ($endTime - $startTime) * 1000;
+            $diffTime = round(($endTime - $startTime), 3);
             $readData = $result->fetchAll();
             if (true === DI::getDefault()->get('config')->pSql) {
                 Log::write('read', "【{$diffTime}】" . 'SQL:' . $sql . ' VALUE:' . json_encode($bindParams, JSON_UNESCAPED_UNICODE), 'sql');
@@ -608,7 +608,7 @@ abstract class BasicModel extends Model
             $this->lastSql = $sql;
             $this->getWriteConnection()->execute($sql, $params);
             $endTime  = microtime(true);
-            $diffTime = ($endTime - $startTime) * 1000;
+            $diffTime = round(($endTime - $startTime), 3);
             if (true === DI::getDefault()->get('config')->pSql) {
                 Log::write('write', "【{$diffTime}】" . 'SQL:' . $sql . ' VALUE:' . json_encode($params, JSON_UNESCAPED_UNICODE), 'sql');
             }
