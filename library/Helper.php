@@ -2,6 +2,9 @@
 
 namespace woodlsy\phalcon\library;
 
+use DateTime;
+use Exception;
+
 /**
  * Class Helper
  *
@@ -104,7 +107,7 @@ class Helper
         $str1 = 'QWERTYUIOPASDFGHJKLZXCVBNM';
         $str2 = '1234567890';
         $str3 = 'qwertyuiopasdfghjklzxcvbnm';
-        $str = '';
+        $str  = '';
         if (self::hasBitwise(1, $type)) {
             $str .= $str1;
         }
@@ -127,7 +130,7 @@ class Helper
     public static function moneyToShow($money) : string
     {
         if (false !== strpos($money, '.')) {
-            return (string)$money;
+            return (string) $money;
         }
         return sprintf("%.2f", $money / 100);
     }
@@ -158,6 +161,8 @@ class Helper
         return ['province_code' => $provinceCode . '0000', 'city_code' => $cityCode . '00', 'district_code' => $districtCode];
     }
 
+    /******************************* 时间 ****************************************/
+
     /**
      * 获取时间格式
      *
@@ -166,18 +171,85 @@ class Helper
      * @param string|null $time
      * @return string
      */
-    public static function now(string $format = null, string $time = null) : string
+    public static function now(string $format = null, $time = null) : string
     {
-        if (null === $format) {
-            $format = 'Y-m-d H:i:s';
-        }
-        if (null === $time) {
-            $time = time();
-        }
+        $format = $format ? : 'Y-m-d H:i:s';
+        $time   = $time ? : time();
         return date($format, $time);
     }
 
-    /******************************* 其他 ****************************************/
+    /**
+     * 两个日期之间的天数差
+     *
+     * @author yls
+     * @param string $startTime
+     * @param string $endTime
+     * @return int
+     * @throws Exception
+     */
+    public static function diffOfDaysBetweenDates(string $startTime, string $endTime):int
+    {
+        $sTime = new DateTime($startTime);
+        $eTime = new DateTime($endTime);
+        return (int)$sTime->diff($eTime)->days;
+    }
+
+    /******************************* 号码 ****************************************/
+
+    /**
+     * 验证身份证号
+     * 身份证验证规则：
+     * 第十八位数字（校验码）的计算方法为：
+     * 1.将前面的身份证号码17位数分别乘以不同的系数。从第一位到第十七位的系数分别为：7 9 10 5 8 4 2 1 6 3 7 9 10 5 8 4 2
+     * 2.将这17位数字和系数相乘的结果相加与11进行相除。
+     * 3.余数0 1 2 3 4 5 6 7 8 9 10这11个数字，其分别对应的最后一位身份证的号码为1 0 X 9 8 7 6 5 4 3 2。
+     * 4.例如 余数为 0 , 则身份证最后一位就是1
+     *       余数为 2 , 则身份证最后一位就是罗马数字X
+     *       余数为 10 , 则身份证最后一位就是2
+     *
+     * @author yls
+     * @param string $cardNo
+     * @return bool
+     */
+    public static function checkIDCardNo(string $cardNo) : bool
+    {
+        if (strlen($cardNo) !== 15 && strlen($cardNo) !== 18) {
+            return false;
+        }
+        $cardNoCoefficient = [7, 9, 10, 5, 8, 4, 2, 1, 6, 3, 7, 9, 10, 5, 8, 4, 2];
+        $sum               = 0;
+        foreach ($cardNoCoefficient as $key => $val) {
+            $sum += $cardNo[$key] * $val;
+        }
+        $remainderArr = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+        $lastArr      = [1, 0, 'X', 9, 8, 7, 6, 5, 4, 3, 2];
+        $last         = '';
+        foreach ($remainderArr as $k => $v) {
+            if ($v === $sum % 11) {
+                $last = (string) $lastArr[$k];
+            }
+        }
+        if ($last !== substr($cardNo, -1)) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * 从身份证号码获取男女  1 男 2 女
+     *
+     * @author yls
+     * @param string $cardNo
+     * @return int
+     */
+    public static function getSexByIDCardNo(string $cardNo) : int
+    {
+        $n = substr($cardNo, -2, 1);
+        if (false === $n) {
+            return 0;
+        }
+        return true === self::isEven((int) $n) ? 2 : 1;
+    }
 
     /**
      * 验证手机号码
@@ -194,6 +266,44 @@ class Helper
             return false;
         }
     }
+
+    /**
+     * 脱敏手机号
+     *
+     * @author yls
+     * @param string $mobile
+     * @return string
+     */
+    public static function enMobile(string $mobile) : string
+    {
+        return empty($mobile) ? '' : substr_replace($mobile, '****', 3, 4);
+    }
+
+    /**
+     * 批量手机号脱敏
+     *
+     * @author yls
+     * @param array $data
+     * @return array
+     */
+    public static function enMobileBatch(array $data) : array
+    {
+        if (empty($data)) {
+            return $data;
+        }
+        if (is_array(current($data))) {
+            foreach ($data as &$value) {
+                $value = self::enMobileBatch($value);
+            }
+        } else {
+            if (isset($data['mobile'])) {
+                $data['mobile'] = self::enMobile($data['mobile']);
+            }
+        }
+        return $data;
+    }
+
+    /******************************* 其他 ****************************************/
 
     /**
      * 解析json
@@ -218,42 +328,6 @@ class Helper
     public static function jsonEncode($content) : string
     {
         return json_encode($content, JSON_UNESCAPED_UNICODE);
-    }
-
-    /**
-     * 脱敏手机号
-     *
-     * @author yls
-     * @param string $mobile
-     * @return string
-     */
-    public static function enMobile(string $mobile) : string
-    {
-        return empty($mobile) ? '' : substr_replace($mobile,'****',3,4);
-    }
-
-    /**
-     * 批量手机号脱敏
-     *
-     * @author yls
-     * @param array $data
-     * @return array
-     */
-    public static function enMobileBatch(array $data):array
-    {
-        if (empty($data)) {
-            return $data;
-        }
-        if (is_array(current($data))) {
-            foreach ($data as &$value) {
-                $value = self::enMobileBatch($value);
-            }
-        } else {
-            if (isset($data['mobile'])) {
-                $data['mobile'] = self::enMobile($data['mobile']);
-            }
-        }
-        return $data;
     }
 
     /**
