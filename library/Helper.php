@@ -148,8 +148,9 @@ class Helper
     }
 
     /**
-     * 根据区code，返回省市区code
+     * 即将废弃
      *
+     * @deprecated
      * @author yls
      * @param string $districtCode
      * @return array
@@ -159,6 +160,26 @@ class Helper
         $provinceCode = substr($districtCode, 0, 2);
         $cityCode     = substr($districtCode, 0, 4);
         return ['province_code' => $provinceCode . '0000', 'city_code' => $cityCode . '00', 'district_code' => $districtCode];
+    }
+
+    /**
+     * 根据地区code，返回省市区code
+     *
+     * @author yls
+     * @param string $regionCode
+     * @return array
+     */
+    public static function getRegionCodeByRegionCode(string $regionCode) : array
+    {
+        $data = ['province_code' => '', 'city_code' => '', 'district_code' => ''];
+        if (6 !== strlen($regionCode)) {
+            return $data;
+        }
+        $regionCodeArr         = str_split($regionCode, 2);
+        $data['province_code'] = $regionCodeArr[0] . '0000';
+        $data['city_code']     = '00' !== $regionCodeArr[1] ? $regionCodeArr[0] . $regionCodeArr[1] . '00' : '';
+        $data['district_code'] = '00' !== $regionCodeArr[2] ? $regionCode : '';
+        return $data;
     }
 
     /******************************* 时间 ****************************************/
