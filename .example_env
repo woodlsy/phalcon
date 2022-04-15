@@ -1,6 +1,6 @@
 open_modules=1
 modules[]=index
-exception=woodlsy\phalcon\library\DiyException::class
+exception=woodlsy\phalcon\library\DiyException
 yar_service=0
 limit_request=1
 csrf=1
