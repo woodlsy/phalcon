@@ -175,9 +175,8 @@ abstract class BasicModel extends Model
     /**
      * 表字段属性
      *
-     * @return array
      */
-    abstract public function attribute() : array;
+    abstract public function attribute();
 
     /**
      * 处理需要查询的字段
@@ -477,7 +476,7 @@ abstract class BasicModel extends Model
      * @param string $groupBy
      * @return array
      */
-    public function getAll($where = [], $fields = NULL, string $orderBy = NULL, string $groupBy = '') : array
+    public function getAll($where = [], $fields = NULL, string $orderBy = '', string $groupBy = '') : array
     {
         return $this->getList($where, $orderBy, null, null, $fields, $groupBy);
     }
@@ -651,13 +650,12 @@ abstract class BasicModel extends Model
     }
 
     /**
-     * 处理空时间
+     *  处理空时间
      *
      * @author yls
      * @param $val
-     * @return string
      */
-    protected function dealResultTime($val) : string
+    protected function dealResultTime($val)
     {
         if ('0000-00-00 00:00:00' === $val || '1990-01-01 00:00:00' === $val || '1990-01-01' === $val) {
             return '';
