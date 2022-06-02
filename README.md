@@ -1,5 +1,5 @@
 # phalcon
-- version 0.3.26
+- version 0.3.28
 ### 入口文件
 ```php
 define('APP_NAME', 'app'); // 项目名称
