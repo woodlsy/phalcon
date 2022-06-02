@@ -146,8 +146,7 @@ class BasicController extends Controller
             }
         }
         switch (strtoupper($type)) {
-            case 'JSON' :
-                return $this->response->setJsonContent($returnMsg);
+            case 'JSON':
             default:
                 return $this->response->setJsonContent($returnMsg);
         }
@@ -271,7 +270,7 @@ class BasicController extends Controller
      *
      * @return array
      */
-     public function attribute(){
+     public function attribute():array{
 '.
             'return '.var_export($attribute, true).';'.
             '

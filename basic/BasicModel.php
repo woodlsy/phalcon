@@ -177,7 +177,7 @@ abstract class BasicModel extends Model
      *
      * @return array
      */
-    abstract public function attribute();
+    abstract public function attribute() : array;
 
     /**
      * 处理需要查询的字段
@@ -298,7 +298,7 @@ abstract class BasicModel extends Model
      * @param array $data
      * @return int
      */
-    public function insertData(array $data)
+    public function insertData(array $data) : int
     {
         $data = $this->_dealInsertFields($data);
         $data = $this->dealInsertData($data);
@@ -330,7 +330,7 @@ abstract class BasicModel extends Model
      * @param array $data
      * @return array
      */
-    private function _dealInsertFields(array $data)
+    private function _dealInsertFields(array $data) : array
     {
         if (!is_array(current($data)) || !isset($data[0])) {
             $fields = $this->attribute();
@@ -363,7 +363,7 @@ abstract class BasicModel extends Model
      * @param bool  $updateDate
      * @return int
      */
-    public function updateData(array $data, $where, $updateDate = true)
+    public function updateData(array $data, $where, bool $updateDate = true) : int
     {
         $fields = $this->attribute();
         if (isset($fields['update_at']) && !isset($data['update_at']) && true === $updateDate)
@@ -382,9 +382,9 @@ abstract class BasicModel extends Model
      *
      * @author yls
      * @param array $where
-     * @return int|bool
+     * @return int
      */
-    public function deleteData(array $where)
+    public function deleteData(array $where) : int
     {
         $fields = $this->attribute();
         $data   = ['is_deleted' => 1];
@@ -400,7 +400,7 @@ abstract class BasicModel extends Model
      * @param array $where
      * @return int
      */
-    public function delData(array $where)
+    public function delData(array $where) : int
     {
         $whereSql = $this->dealWhere($where);
         $sql      = "DELETE FROM {$this->_targetTable} where " . $whereSql['where'];
@@ -420,7 +420,7 @@ abstract class BasicModel extends Model
         $sql    = "select {$fields} from {$this->_targetTable} where `id` = ?";
         $params = [$id];
         $data   = $this->getRows($sql, $params);
-        return isset($data[0]) ? $data[0] : array();
+        return $data[0] ?? array();
     }
 
     /**
@@ -432,10 +432,10 @@ abstract class BasicModel extends Model
      * @param string $groupBy
      * @return array
      */
-    public function getOne($where, $fields = "", string $orderBy = "", string $groupBy = '') : array
+    public function getOne($where, string $fields = "", string $orderBy = "", string $groupBy = '') : array
     {
         $data = $this->getList($where, $orderBy, 0, 1, $fields, $groupBy);
-        return isset($data[0]) ? $data[0] : array();
+        return $data[0] ?? array();
     }
 
     /**
@@ -448,9 +448,9 @@ abstract class BasicModel extends Model
      * @param null   $row
      * @param null   $fields
      * @param string $groupBy
-     * @return array|bool
+     * @return array
      */
-    public function getList($where, $orderBy = '', $offset = NUll, $row = NUll, $fields = NUll, $groupBy = '')
+    public function getList($where, string $orderBy = '', $offset = NUll, $row = NUll, $fields = NUll, string $groupBy = '') : array
     {
         $whereSql = $this->dealWhere($where);
         $fields   = $this->dealFields($fields);
@@ -473,11 +473,11 @@ abstract class BasicModel extends Model
      * @author yls
      * @param        $where
      * @param null   $fields
-     * @param string $orderBy
+     * @param string|null $orderBy
      * @param string $groupBy
-     * @return array|bool
+     * @return array
      */
-    public function getAll($where = [], $fields = NULL, $orderBy = NULL, $groupBy = '')
+    public function getAll($where = [], $fields = NULL, string $orderBy = NULL, string $groupBy = '') : array
     {
         return $this->getList($where, $orderBy, null, null, $fields, $groupBy);
     }
@@ -486,12 +486,12 @@ abstract class BasicModel extends Model
      * 获取多条数据
      *
      * @author yls
-     * @param       $sql
-     * @param array $params
-     * @param bool  $isDeal 是否对数据进行处理
-     * @return array|bool
+     * @param string $sql
+     * @param array  $params
+     * @param bool   $isDeal 是否对数据进行处理
+     * @return array
      */
-    public function getRows($sql, $params = [], $isDeal = true)
+    public function getRows(string $sql, array $params = [], bool $isDeal = true) : array
     {
         try {
             $rows = $this->readData($sql, $params);
@@ -502,7 +502,7 @@ abstract class BasicModel extends Model
             }
         } catch (Exception $e) {
             Log::write('sql', $e->getMessage(), 'error');
-            return false;
+            return [];
         }
     }
 
@@ -515,7 +515,7 @@ abstract class BasicModel extends Model
      * @param string $groupBy
      * @return array|int
      */
-    public function getCount($where, array $fields = [], $groupBy = '')
+    public function getCount($where, array $fields = [], string $groupBy = '')
     {
         if (!empty($fields)) {
             $fieldStr = [];
@@ -567,7 +567,7 @@ abstract class BasicModel extends Model
      * @param array|null $bindParams
      * @return array
      */
-    protected function readData(string $sql, array $bindParams = null)
+    protected function readData(string $sql, array $bindParams = null) : array
     {
         $sql = $this->loadPrefix($sql);
 
@@ -599,7 +599,7 @@ abstract class BasicModel extends Model
      * @param array  $params
      * @return int     新增时返回新增的ID
      */
-    protected function execute($sql, $params)
+    protected function execute(string $sql, array $params) : int
     {
         $sql = $this->loadPrefix($sql);
 
@@ -657,7 +657,7 @@ abstract class BasicModel extends Model
      * @param $val
      * @return string
      */
-    protected function dealResultTime($val)
+    protected function dealResultTime($val) : string
     {
         if ('0000-00-00 00:00:00' === $val || '1990-01-01 00:00:00' === $val || '1990-01-01' === $val) {
             return '';
@@ -684,7 +684,7 @@ abstract class BasicModel extends Model
      * @param array $data
      * @return array
      */
-    public function castType(array $data)
+    public function castType(array $data) : array
     {
 
         if (empty($data)) {
@@ -697,6 +697,25 @@ abstract class BasicModel extends Model
             Redis::getInstance()->setex($key, 600, Helper::jsonEncode($fields));
         }
         $fields = Helper::jsonDecode(Redis::getInstance()->get($key));
+
+        $isCast = false;
+        foreach ($fields as $filed) {
+            if ($filed['Field'] === $key) {
+                if (
+                    0 === strpos($filed['Type'], 'int(') ||
+                    0 === strpos($filed['Type'], 'tinyint(') ||
+                    0 === strpos($filed['Type'], 'bigint(') ||
+                    0 === strpos($filed['Type'], 'mediumint(') ||
+                    0 === strpos($filed['Type'], 'smallint(')
+                ) {
+
+                    $isCast = true;
+                }
+            }
+        }
+        if (!$isCast) {
+            return $data;
+        }
 
         foreach ($data as $key => $value) {
             if (is_array($value) && is_numeric($key)) {
