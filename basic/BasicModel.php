@@ -698,17 +698,15 @@ abstract class BasicModel extends Model
 
         $isCast = false;
         foreach ($fields as $filed) {
-            if ($filed['Field'] === $key) {
-                if (
-                    0 === strpos($filed['Type'], 'int(') ||
-                    0 === strpos($filed['Type'], 'tinyint(') ||
-                    0 === strpos($filed['Type'], 'bigint(') ||
-                    0 === strpos($filed['Type'], 'mediumint(') ||
-                    0 === strpos($filed['Type'], 'smallint(')
-                ) {
+            if (
+                0 === strpos($filed['Type'], 'int(') ||
+                0 === strpos($filed['Type'], 'tinyint(') ||
+                0 === strpos($filed['Type'], 'bigint(') ||
+                0 === strpos($filed['Type'], 'mediumint(') ||
+                0 === strpos($filed['Type'], 'smallint(')
+            ) {
 
-                    $isCast = true;
-                }
+                $isCast = true;
             }
         }
         if (!$isCast) {
