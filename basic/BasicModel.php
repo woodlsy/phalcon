@@ -696,14 +696,16 @@ abstract class BasicModel extends Model
         }
         $fields = Helper::jsonDecode(Redis::getInstance()->get($key));
 
+        $dataFieldsName = is_array(current($data)) ? array_keys(current($data)) : array_keys($data);
         $isCast = false;
         foreach ($fields as $filed) {
             if (
-                0 === strpos($filed['Type'], 'int(') ||
+                in_array($filed['Field'], $dataFieldsName) &&
+                (0 === strpos($filed['Type'], 'int(') ||
                 0 === strpos($filed['Type'], 'tinyint(') ||
                 0 === strpos($filed['Type'], 'bigint(') ||
                 0 === strpos($filed['Type'], 'mediumint(') ||
-                0 === strpos($filed['Type'], 'smallint(')
+                0 === strpos($filed['Type'], 'smallint('))
             ) {
 
                 $isCast = true;
