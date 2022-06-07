@@ -426,12 +426,12 @@ abstract class BasicModel extends Model
      * 获取单条数据
      *
      * @param        $where
-     * @param string $fields
+     * @param string|array $fields
      * @param string $orderBy
      * @param string $groupBy
      * @return array
      */
-    public function getOne($where, string $fields = "", string $orderBy = "", string $groupBy = '') : array
+    public function getOne($where, $fields = "", string $orderBy = "", string $groupBy = '') : array
     {
         $data = $this->getList($where, $orderBy, 0, 1, $fields, $groupBy);
         return $data[0] ?? array();
@@ -510,11 +510,11 @@ abstract class BasicModel extends Model
      *
      * @author yls
      * @param        $where
-     * @param array  $fields
+     * @param array|string  $fields
      * @param string $groupBy
      * @return array|int
      */
-    public function getCount($where, array $fields = [], string $groupBy = '')
+    public function getCount($where, $fields = [], string $groupBy = '')
     {
         if (!empty($fields)) {
             $fieldStr = [];
@@ -541,10 +541,10 @@ abstract class BasicModel extends Model
      *
      * @author yls
      * @param       $where
-     * @param array $fields
+     * @param array|string $fields
      * @return array
      */
-    public function getSum($where, array $fields) : array
+    public function getSum($where, $fields) : array
     {
         $fieldStr = [];
         foreach ($fields as $val) {
