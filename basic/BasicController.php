@@ -284,6 +284,12 @@ class BasicController extends Controller
         return '<pre>' . $data . '</pre>';
     }
 
+    /**
+     * 限制IP请求
+     *
+     * @author yls
+     * @throws Exception
+     */
     private function _limitIp()
     {
         $ipKey             = $this->ip . $this->moduleName . '_' . $this->controllerName . '_' . $this->actionName;
