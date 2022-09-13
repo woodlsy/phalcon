@@ -50,7 +50,7 @@ class BasicController extends Controller
         $this->config = Di::getDefault()->getConfig();
 
         if ($this->request->isPost() && true === (bool) $this->config->limit_request) {
-            if (!session_id()){
+            if (!session_id()) {
                 session_start();
             }
             $key = session_id() . '_controller_lock_' . $this->moduleName . '_' . $this->controllerName . '_' . $this->actionName;
@@ -58,6 +58,31 @@ class BasicController extends Controller
                 throw new Exception('请勿频繁请求');
             } else {
                 Redis::getInstance()->setex($key, 5, 1);
+            }
+        }
+
+        // 限制IP请求
+        $ipLimitKey        = md5($this->request->getClientAddress(true));
+        $ipLimitErrorKey   = md5($this->request->getClientAddress(true) . '_error');
+        $ipLimitRequestKey = md5($this->request->getClientAddress(true) . '_request');
+        if (Redis::getInstance()->exists($ipLimitRequestKey)) {
+            throw new Exception('您已被限制请求，如需解除，请联系管理员');
+        }
+        if (true === (bool) $this->config->ipLimit) {
+            $ipLimitKeyExists = Redis::getInstance()->exists($ipLimitKey);
+            $count            = Redis::getInstance()->incr($ipLimitKey);
+            if (!$ipLimitKeyExists) {
+                Redis::getInstance()->expire($ipLimitKey, 5);
+            }
+            if ($count > $this->config->ipLimitCount) {
+                $ipLimitErrorKeyExists = Redis::getInstance()->exists($ipLimitErrorKey);
+                if (Redis::getInstance()->incr($ipLimitErrorKey) > 5) {
+                    Redis::getInstance()->setEx($ipLimitRequestKey, 12 * 3600, 1);
+                }
+                if (!$ipLimitErrorKeyExists) {
+                    Redis::getInstance()->expire($ipLimitErrorKey, 300);
+                }
+                throw new Exception('网络也是有脾气的，慢一点请求哦');
             }
         }
     }
@@ -69,8 +94,8 @@ class BasicController extends Controller
      */
     public function afterExecuteRoute()
     {
-        if ($this->request->isPost() && true === (bool) $this->config->limit_request) {
-            $key = session_id() . '_controller_lock_' . $this->moduleName . '_' . $this->controllerName . '_' . $this->actionName;
+        $key = session_id() . '_controller_lock_' . $this->moduleName . '_' . $this->controllerName . '_' . $this->actionName;
+        if (Redis::getInstance()->exists($key)) {
             Redis::getInstance()->del($key);
         }
     }
@@ -138,7 +163,8 @@ class BasicController extends Controller
     final protected function ajaxReturn(int $code, string $msg, $data = null, array $other = null, $type = 'json') : ResponseInterface
     {
         $returnMsg = ['code' => $code, 'msg' => $msg];
-        if (null !== $data) $returnMsg['data'] = $data;
+        if (null !== $data)
+            $returnMsg['data'] = $data;
 
         if ($other && is_array($other)) {
             foreach ($other as $key => $val) {
@@ -236,46 +262,46 @@ class BasicController extends Controller
      * @param string $table
      * @return string
      */
-    protected function getTableAttribute(string $database, string $table):string
+    protected function getTableAttribute(string $database, string $table) : string
     {
-        $data = '/**
+        $data      = '/**
      * 库名
      *
      * @var string
      */
-    public $_targetDb = \''.$database.'\';
+    public $_targetDb = \'' . $database . '\';
     
     ';
-        $tableArr = explode('_', $table, 2);
-        $tableName = count($tableArr) >= 2 ? '{{'.$tableArr[1].'}}' : $table;
-        $data .='/**
+        $tableArr  = explode('_', $table, 2);
+        $tableName = count($tableArr) >= 2 ? '{{' . $tableArr[1] . '}}' : $table;
+        $data      .= '/**
      * 表名
      *
      * @var string
      */
-    protected $_targetTable = \''.$tableName.'\';
+    protected $_targetTable = \'' . $tableName . '\';
     
     ';
 
-        $sql = 'SHOW FULL COLUMNS FROM '.$table;
+        $sql = 'SHOW FULL COLUMNS FROM ' . $table;
 
         $connection = \Phalcon\DI::getDefault()->get($database);
-        $table = $connection->fetchAll($sql);
-        $attribute = [];
+        $table      = $connection->fetchAll($sql);
+        $attribute  = [];
         foreach ($table as $value) {
-            $attribute[$value['Field']] = $value['Comment'] ?: $value['Field'];
+            $attribute[$value['Field']] = $value['Comment'] ? : $value['Field'];
         }
-        $data .='/**
+        $data .= '/**
      * 表字段属性
      *
      * @return array
      */
      public function attribute():array{
-'.
-            'return '.var_export($attribute, true).';'.
+' .
+            'return ' . var_export($attribute, true) . ';' .
             '
             }';
-        return '<pre>'.$data.'</pre>';
+        return '<pre>' . $data . '</pre>';
     }
 
 }

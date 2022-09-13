@@ -634,7 +634,13 @@ abstract class BasicModel extends Model
 
         $this->isCast = (bool) DI::getDefault()->get('config')->isCast;
         if (true === $this->isCast) {
+            $startTime     = microtime(true);
             $row = $this->castType($row);
+            $endTime  = microtime(true);
+            $diffTime = round(($endTime - $startTime), 3);
+            if ($diffTime > 0.1) {
+                Log::write('cast', "【{$diffTime}】".$this->lastSql, 'sql');
+            }
         }
         foreach ($row as $key => &$val) {
             if (is_array($val)) {

@@ -15,6 +15,8 @@ $config = [
     'yar_service'      => false,
     'limit_request'    => true, // 限制频繁请求 true 是 false 否
     'csrf'             => true, // 是否开启csrf true是 false 否
+    'ipLimit'          => true, // 是否限制IP频繁请求
+    'ipLimitCount'     => 3, // 5秒内IP限制请求次数
     'csrf_key_name'    => 'tokenKey',
     'csrf_key_value'   => 'tokenValue',
     'logsPath'         => '/data/logs/' . APP_NAME . '/',
@@ -78,6 +80,6 @@ if (file_exists(APP_PATH . '/config/config.php')) {
     $config    = array_merge($config, $appConfig);
 }
 if (!empty($envData)) {
-    $config    = array_merge($config, $envData);
+    $config = array_merge($config, $envData);
 }
 return new Config($config);
