@@ -34,6 +34,7 @@ class BasicController extends Controller
     protected $controllerName = null;
     protected $actionName     = null;
     protected $config;
+    protected $ip             = null;
 
     /**
      * 加载控制器前执行
@@ -46,6 +47,7 @@ class BasicController extends Controller
         $this->moduleName     = $this->router->getModuleName();
         $this->controllerName = $this->router->getControllerName();
         $this->actionName     = $this->router->getActionName();
+        $this->ip             = $this->request->getClientAddress(true);
 
         $this->config = Di::getDefault()->getConfig();
 
@@ -62,29 +64,7 @@ class BasicController extends Controller
         }
 
         // 限制IP请求
-        $ipLimitKey        = md5($this->request->getClientAddress(true));
-        $ipLimitErrorKey   = md5($this->request->getClientAddress(true) . '_error');
-        $ipLimitRequestKey = md5($this->request->getClientAddress(true) . '_request');
-        if (Redis::getInstance()->exists($ipLimitRequestKey)) {
-            throw new Exception('您已被限制请求，如需解除，请联系管理员');
-        }
-        if (true === (bool) $this->config->ipLimit) {
-            $ipLimitKeyExists = Redis::getInstance()->exists($ipLimitKey);
-            $count            = Redis::getInstance()->incr($ipLimitKey);
-            if (!$ipLimitKeyExists) {
-                Redis::getInstance()->expire($ipLimitKey, 5);
-            }
-            if ($count > $this->config->ipLimitCount) {
-                $ipLimitErrorKeyExists = Redis::getInstance()->exists($ipLimitErrorKey);
-                if (Redis::getInstance()->incr($ipLimitErrorKey) > 5) {
-                    Redis::getInstance()->setEx($ipLimitRequestKey, 12 * 3600, 1);
-                }
-                if (!$ipLimitErrorKeyExists) {
-                    Redis::getInstance()->expire($ipLimitErrorKey, 300);
-                }
-                throw new Exception('网络也是有脾气的，慢一点请求哦');
-            }
-        }
+        $this->_limitIp();
     }
 
     /**
@@ -302,6 +282,39 @@ class BasicController extends Controller
             '
             }';
         return '<pre>' . $data . '</pre>';
+    }
+
+    private function _limitIp()
+    {
+        $ipKey             = $this->ip . $this->moduleName . '_' . $this->controllerName . '_' . $this->actionName;
+        $ipLimitKey        = md5($ipKey);
+        $ipLimitErrorKey   = md5($ipKey . '_error');
+        $ipLimitRequestKey = md5($ipKey . '_request');
+
+        if (Redis::getInstance()->exists($ipLimitRequestKey)) {
+            throw new Exception('您已被限制请求，如需解除，请联系管理员');
+        }
+
+        foreach ([$ipLimitKey => $this->config->ipApiLimitCount, md5($this->ip) => $this->config->ipLimitCount] as $key => $value) {
+            if (true === (bool) $this->config->ipLimit) {
+                $ipLimitKeyExists = Redis::getInstance()->exists($key);
+                $count            = Redis::getInstance()->incr($key);
+                if (!$ipLimitKeyExists) {
+                    Redis::getInstance()->expire($key, 5);
+                }
+                if ($count > $value) {
+                    $ipLimitErrorKeyExists = Redis::getInstance()->exists($ipLimitErrorKey);
+                    if (Redis::getInstance()->incr($ipLimitErrorKey) > 5) {
+                        Redis::getInstance()->setEx($ipLimitRequestKey, 12 * 3600, 1);
+                    }
+                    if (!$ipLimitErrorKeyExists) {
+                        Redis::getInstance()->expire($ipLimitErrorKey, 300);
+                    }
+                    throw new Exception('网络也是有脾气的，慢一点请求哦');
+                }
+            }
+        }
+
     }
 
 }
