@@ -306,7 +306,7 @@ class BasicController extends Controller
                 $ipLimitKeyExists = Redis::getInstance()->exists($key);
                 $count            = Redis::getInstance()->incr($key);
                 if (!$ipLimitKeyExists) {
-                    Redis::getInstance()->expire($key, 5);
+                    Redis::getInstance()->expire($key, $this->config->ipApiLimitTime);
                 }
                 if ($count > $value) {
                     $ipLimitErrorKeyExists = Redis::getInstance()->exists($ipLimitErrorKey);
