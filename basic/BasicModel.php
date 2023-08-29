@@ -23,6 +23,7 @@ abstract class BasicModel extends Model
 
     // 是否强制转换字段类型
     protected $isCast = false;
+    protected $columnsRedisTtl = 600;
 
     /**
      * 初始化
@@ -626,7 +627,7 @@ abstract class BasicModel extends Model
      * @param array $row
      * @return array
      */
-    protected function dealResult(array $row) : array
+        protected function dealResult(array $row) : array
     {
         if (empty($row)) {
             return $row;
@@ -661,9 +662,11 @@ abstract class BasicModel extends Model
      * @author yls
      * @param $val
      */
-    protected function dealResultTime($val)
+    protected function dealResultTime($val):string
     {
-        if ('0000-00-00 00:00:00' === $val || '1990-01-01 00:00:00' === $val || '1990-01-01' === $val) {
+        if ('0000-00-00 00:00:00' === $val || '1990-01-01 00:00:00' === $val || '1990-01-01' === $val ||
+            '0001-01-01' === $val || '0001-01-01 00:00:00' === $val
+        ) {
             return '';
         } else {
             return $val;
@@ -698,7 +701,7 @@ abstract class BasicModel extends Model
         if (!Redis::getInstance()->exists($key)) {
             $sql    = 'SHOW FULL COLUMNS FROM ' . $this->_targetTable;
             $fields = $this->getRows($sql, [], false);
-            Redis::getInstance()->setex($key, 600, Helper::jsonEncode($fields));
+            Redis::getInstance()->setex($key, $this->columnsRedisTtl, Helper::jsonEncode($fields));
         }
         $fields = Helper::jsonDecode(Redis::getInstance()->get($key));
 
