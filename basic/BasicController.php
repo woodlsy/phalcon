@@ -232,6 +232,112 @@ class BasicController extends Controller
         return $value;
     }
 
+    protected function autoGenerateModels(){
+        $db = $this->get('db');
+        $path = $this->get('path');
+        if (!empty($db) && !empty($path)) {
+            return $this->_autoGenerateModels();
+        }
+
+
+        $databasesHtml = "";
+        if (!empty($this->config->db)) {
+            foreach ($this->config->db as $k => $v) {
+                $databases .= "<option value='{$k}'>{$k}</option>";
+            }
+        }
+        echo <<<EOT
+        
+        <div style="margin-top: 30%;text-align: center">
+        <form method="get" >
+        <div style="margin-bottom: 10px">数  据  库：<select name="db" id="db" style="width:200px">
+        <option value="">请选择数据库</option>
+       $databases
+</select></div>
+        <div style="margin-bottom: 10px">Model路径：<input type="text" style="width:200px" name="path" id="path"></div>
+        <div style="margin-bottom: 10px">继承Model：<input type="text" style="width:200px" name="extend" id="extend"></div>
+        <button type="submit" id="submit" style="padding: 5px 10px">生成</button>
+        </form>
+        </div>
+        <script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+        <script type="text/javascript">
+        $(function (){
+            $('#submit').click(function (){
+                if($('#db').val() === "") {
+                    alert("请先选择数据库");
+                    return false
+                }
+                if($('#path').val() === "") {
+                    alert("请填写model文件夹路径");
+                    return false
+                }
+                // $('form').submit()
+            })
+        })
+        
+        </script>
+EOT;
+        exit;
+    }
+
+    private function _autoGenerateModels()
+    {
+        $db = $this->get('db');
+        $path = $this->get('path');
+        $extend = $this->get('extend');
+
+        $filePath = '../'.str_replace('\\', '/', $path).'/';
+        $path = str_replace('/', '\\', $path);
+
+        if (!empty($extend)) {
+            $extend = str_replace('/', '\\', $extend);
+            $extend = 'extends \\'.$extend;
+        }
+
+        $connection = \Phalcon\DI::getDefault()->get($db);
+        $sql = 'show tables';
+        $tables      = $connection->fetchAll($sql);
+        if (empty($tables)) {
+            echo '找不到表';
+            return;
+        }
+        foreach ($tables as $table) {
+            $tableName = $table['Tables_in_zcb'];
+            if (!empty($this->config->db->{$db}->prefix)) {
+                $tableName = substr($tableName, strlen($this->config->db->{$db}->prefix));
+            }
+            $fileName = '';
+            foreach (explode('_', $tableName) as $tableNameWord) {
+                $fileName .= ucfirst($tableNameWord);
+            }
+            $fileFullPath = $filePath.$fileName.'.php';
+            if (file_exists($fileFullPath)) {
+                echo $fileFullPath.' <span style="color: gray">已存在跳过</span><br>';
+                continue;
+            }
+
+            $content = $this->_getTableAttribute($db,$table['Tables_in_zcb'] );
+            $fileContent = <<<EOT
+<?php
+declare(strict_types = 1);
+
+namespace $path;
+
+class $fileName $extend
+{
+$content
+}
+EOT;
+            $res = file_put_contents($fileFullPath, $fileContent);
+            if ($res === false) {
+                echo $fileFullPath.' <span style="color: red">创建失败</span><br>';
+            }else {
+                echo $fileFullPath.' <span style="color: green">创建成功</span><br>';
+            }
+        }
+
+    }
+
 
     /**
      * tmp
@@ -244,24 +350,15 @@ class BasicController extends Controller
      */
     protected function getTableAttribute(string $database, string $table) : string
     {
-        $data      = '/**
-     * 库名
-     *
-     * @var string
-     */
-    public $_targetDb = \'' . $database . '\';
-    
-    ';
-        $tableArr  = explode('_', $table, 2);
-        $tableName = count($tableArr) >= 2 ? '{{' . $tableArr[1] . '}}' : $table;
-        $data      .= '/**
-     * 表名
-     *
-     * @var string
-     */
-    protected $_targetTable = \'' . $tableName . '\';
-    
-    ';
+        $data = $this->_getTableAttribute($database, $table);
+        return '<pre>' . $data . '</pre>';
+    }
+
+    private function _getTableAttribute(string $database, string $table){
+        $newTableName = $table;
+        if (!empty($this->config->db->{$db}->prefix)) {
+            $newTableName = substr($newTableName, strlen($this->config->db->{$db}->prefix));
+        }
 
         $sql = 'SHOW FULL COLUMNS FROM ' . $table;
 
@@ -271,17 +368,37 @@ class BasicController extends Controller
         foreach ($table as $value) {
             $attribute[$value['Field']] = $value['Comment'] ? : $value['Field'];
         }
-        $data .= '/**
+        $attr =  var_export($attribute, true);
+
+        $newTableNameValue = '{{'.$newTableName.'}}';
+        $_targetDbValue = '$_targetDb';
+        $_targetTableValue = '$_targetTable';
+        $data = <<<EOT
+    /**
+     * 库名
+     *
+     * @var string
+     */
+    public $_targetDbValue = '$database';
+
+    /**
+     * 表名
+     *
+     * @var string
+     */
+    protected $_targetTableValue = '$newTableNameValue';
+
+    /**
      * 表字段属性
      *
      * @return array
      */
-     public function attribute():array{
-' .
-            'return ' . var_export($attribute, true) . ';' .
-            '
-            }';
-        return '<pre>' . $data . '</pre>';
+    public function attribute():array{
+        return $attr;
+    }
+EOT;
+
+        return $data;
     }
 
     /**
