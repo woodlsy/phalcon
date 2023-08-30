@@ -236,7 +236,8 @@ class BasicController extends Controller
         $db = $this->get('db');
         $path = $this->get('path');
         if (!empty($db) && !empty($path)) {
-            return $this->_autoGenerateModels();
+             $this->_autoGenerateModels();
+            return;
         }
 
 
@@ -248,7 +249,7 @@ class BasicController extends Controller
         }
         echo <<<EOT
         
-        <div style="margin-top: 30%;text-align: center">
+        <div style="margin-top: 300px;text-align: center">
         <form method="get" >
         <div style="margin-bottom: 10px">数  据  库：<select name="db" id="db" style="width:200px">
         <option value="">请选择数据库</option>
@@ -356,8 +357,8 @@ EOT;
 
     private function _getTableAttribute(string $database, string $table){
         $newTableName = $table;
-        if (!empty($this->config->db->{$db}->prefix)) {
-            $newTableName = substr($newTableName, strlen($this->config->db->{$db}->prefix));
+        if (!empty($this->config->db->{$database}->prefix)) {
+            $newTableName = substr($newTableName, strlen($this->config->db->{$database}->prefix));
         }
 
         $sql = 'SHOW FULL COLUMNS FROM ' . $table;

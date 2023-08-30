@@ -387,9 +387,16 @@ abstract class BasicModel extends Model
     public function deleteData(array $where) : int
     {
         $fields = $this->attribute();
-        $data   = ['is_deleted' => 1];
-        if (isset($fields['deleted_at']) && !isset($data['deleted_at']))
-            $data['deleted_at'] = date('Y-m-d H:i:s');
+        $data = [];
+        if (isset($fields['is_deleted'])) {
+            $data['is_deleted'] = 1;
+        }
+        if (isset($fields['deleted_at'])) {
+            $data['deleted_at'] =  Helper::now();
+        }
+        if (empty($data)) {
+            return 0;
+        }
         return $this->updateData($data, $where);
     }
 
@@ -718,6 +725,7 @@ abstract class BasicModel extends Model
             ) {
 
                 $isCast = true;
+                break;
             }
         }
         if (!$isCast) {
