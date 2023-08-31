@@ -25,6 +25,11 @@ abstract class BasicModel extends Model
     protected $isCast = false;
     protected $columnsRedisTtl = 600;
 
+    protected $createAtFieldName = 'create_at';
+    protected $updateAtFieldName = 'update_at';
+    protected $createByFieldName = 'create_by';
+    protected $updateByFieldName = 'update_by';
+
     /**
      * 初始化
      *
@@ -334,17 +339,17 @@ abstract class BasicModel extends Model
     {
         if (!is_array(current($data)) || !isset($data[0])) {
             $fields = $this->attribute();
-            if (isset($fields['create_at']) && !isset($data['create_at'])) {
-                $data['create_at'] = date('Y-m-d H:i:s');
+            if (isset($fields[$this->createAtFieldName]) && !isset($data[$this->createAtFieldName])) {
+                $data[$this->createAtFieldName] = date('Y-m-d H:i:s');
             }
-            if (isset($fields['update_at']) && !isset($data['update_at'])) {
-                $data['update_at'] = date('Y-m-d H:i:s');
+            if (isset($fields[$this->updateAtFieldName]) && !isset($data[$this->updateAtFieldName])) {
+                $data[$this->updateAtFieldName] = date('Y-m-d H:i:s');
             }
-            if (isset($fields['create_by']) && !isset($data['create_by']) && !empty($this->admin)) {
-                $data['create_by'] = $this->admin['id'];
+            if (isset($fields[$this->createByFieldName]) && !isset($data[$this->createByFieldName]) && !empty($this->admin)) {
+                $data[$this->createByFieldName] = $this->admin['id'];
             }
-            if (isset($fields['update_by']) && !isset($data['update_by']) && !empty($this->admin)) {
-                $data['update_by'] = $this->admin['id'];
+            if (isset($fields[$this->updateByFieldName]) && !isset($data[$this->updateByFieldName]) && !empty($this->admin)) {
+                $data[$this->updateByFieldName] = $this->admin['id'];
             }
             return $data;
         }
@@ -366,10 +371,10 @@ abstract class BasicModel extends Model
     public function updateData(array $data, $where, bool $updateDate = true) : int
     {
         $fields = $this->attribute();
-        if (isset($fields['update_at']) && !isset($data['update_at']) && true === $updateDate)
-            $data['update_at'] = date('Y-m-d H:i:s');
-        if (isset($fields['update_by']) && !isset($data['update_by']) && !empty($this->admin) && true === $updateDate)
-            $data['update_by'] = $this->admin['id'];
+        if (isset($fields[$this->updateAtFieldName]) && !isset($data[$this->updateAtFieldName]) && true === $updateDate)
+            $data[$this->updateAtFieldName] = date('Y-m-d H:i:s');
+        if (isset($fields[$this->updateByFieldName]) && !isset($data[$this->updateByFieldName]) && !empty($this->admin) && true === $updateDate)
+            $data[$this->updateByFieldName] = $this->admin['id'];
         $data     = $this->dealUpdateData($data);
         $whereSql = $this->dealWhere($where);
         $params   = array_merge($data['params'], $whereSql['params']);
