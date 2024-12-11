@@ -23,6 +23,7 @@ abstract class BasicModel extends Model
 
     // 是否强制转换字段类型
     protected $isCast = false;
+    protected $castDiffTime = 0.1;
     protected $columnsRedisTtl = 600;
 
     protected $createAtFieldName = 'create_at';
@@ -651,7 +652,7 @@ abstract class BasicModel extends Model
             $row = $this->castType($row);
             $endTime  = microtime(true);
             $diffTime = round(($endTime - $startTime), 3);
-            if ($diffTime > 0.1) {
+            if ($diffTime > $this->castDiffTime) {
                 Log::write('cast', "【{$diffTime}】".$this->lastSql, 'sql');
             }
         }
@@ -718,43 +719,30 @@ abstract class BasicModel extends Model
         $fields = Helper::jsonDecode(Redis::getInstance()->get($key));
 
         $dataFieldsName = is_array(current($data)) ? array_keys(current($data)) : array_keys($data);
-        $isCast = false;
-        foreach ($fields as $filed) {
+        $fieldMap = [];
+        foreach ($fields as $field) {
             if (
-                in_array($filed['Field'], $dataFieldsName) &&
-                (0 === strpos($filed['Type'], 'int(') ||
-                0 === strpos($filed['Type'], 'tinyint(') ||
-                0 === strpos($filed['Type'], 'bigint(') ||
-                0 === strpos($filed['Type'], 'mediumint(') ||
-                0 === strpos($filed['Type'], 'smallint('))
+                in_array($field['Field'], $dataFieldsName) &&
+                (0 === strpos($field['Type'], 'int(') ||
+                0 === strpos($field['Type'], 'tinyint(') ||
+                0 === strpos($field['Type'], 'bigint(') ||
+                0 === strpos($field['Type'], 'mediumint(') ||
+                0 === strpos($field['Type'], 'smallint('))
             ) {
 
-                $isCast = true;
+                $fieldMap[$field['Field']] = true;
                 break;
             }
         }
-        if (!$isCast) {
+        if (empty($fieldMap)) {
             return $data;
         }
 
         foreach ($data as $key => $value) {
             if (is_array($value) && is_numeric($key)) {
                 $data[$key] = $this->castType($value);
-            } else {
-                foreach ($fields as $filed) {
-                    if ($filed['Field'] === $key) {
-                        if (
-                            0 === strpos($filed['Type'], 'int(') ||
-                            0 === strpos($filed['Type'], 'tinyint(') ||
-                            0 === strpos($filed['Type'], 'bigint(') ||
-                            0 === strpos($filed['Type'], 'mediumint(') ||
-                            0 === strpos($filed['Type'], 'smallint(')
-                        ) {
-
-                            $data[$key] = (int) $value;
-                        }
-                    }
-                }
+            } elseif (isset($fieldMap[$key])) {
+                $data[$key] = (int) $value;
             }
         }
         return $data;
