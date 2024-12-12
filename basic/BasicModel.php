@@ -711,12 +711,19 @@ abstract class BasicModel extends Model
             return $data;
         }
         $key = 'COLUMNS_' . $this->_targetTable;
-        if (!Redis::getInstance()->exists($key)) {
+        try {
+            if (!Redis::getInstance()->exists($key)) {
+                $sql    = 'SHOW FULL COLUMNS FROM ' . $this->_targetTable;
+                $fields = $this->getRows($sql, [], false);
+                Redis::getInstance()->setex($key, $this->columnsRedisTtl, Helper::jsonEncode($fields));
+            }
+            $fields = Helper::jsonDecode(Redis::getInstance()->get($key));
+        }catch (Exception $e) {
+            Log::write('redis', $e->getMessage(), 'error');
             $sql    = 'SHOW FULL COLUMNS FROM ' . $this->_targetTable;
             $fields = $this->getRows($sql, [], false);
-            Redis::getInstance()->setex($key, $this->columnsRedisTtl, Helper::jsonEncode($fields));
         }
-        $fields = Helper::jsonDecode(Redis::getInstance()->get($key));
+
 
         $dataFieldsName = is_array(current($data)) ? array_keys(current($data)) : array_keys($data);
         $fieldMap = [];
