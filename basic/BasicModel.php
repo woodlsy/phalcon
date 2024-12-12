@@ -675,7 +675,7 @@ abstract class BasicModel extends Model
      * @author yls
      * @param $val
      */
-    protected function dealResultTime($val):string
+    protected function dealResultTime($val)
     {
         if ('0000-00-00 00:00:00' === $val || '1990-01-01 00:00:00' === $val || '1990-01-01' === $val ||
             '0001-01-01' === $val || '0001-01-01 00:00:00' === $val
@@ -738,7 +738,6 @@ abstract class BasicModel extends Model
             ) {
 
                 $fieldMap[$field['Field']] = true;
-                break;
             }
         }
         if (empty($fieldMap)) {
